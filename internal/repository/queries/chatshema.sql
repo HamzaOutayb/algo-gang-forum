@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS conversations(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_one INTEGER NOT NULL,
+    user_two INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_one) REFERENCES user_profile(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_two) REFERENCES user_profile(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS messages(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    conversation_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES user_profile(id) ON DELETE CASCADE
+);

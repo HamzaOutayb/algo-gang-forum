@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS user_profile(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nickname TEXT UNIQUE NOT NULL,
+    Age TEXT NOT NULL,
+    Gender TEXT NOT NULL,
+    First_Name TEXT NOT NULL,
+    Last_Name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    eassword TEXT NOT NULL,
+    uid TEXT UNIQUE NOT NULL,
+    expired_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
