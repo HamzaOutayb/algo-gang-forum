@@ -6,9 +6,12 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+var db *sql.DB
 
 func OpenDb() (*sql.DB, error) {
-	return sql.Open("sqlite3", "./forum.db")
+	var err error
+	db, err = sql.Open("sqlite3", "./forum.db")
+	return db, err
 }
 
 func InitTables(db *sql.DB) (string, error) {

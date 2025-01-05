@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"real-time-forum/internal/repository"
 	"real-time-forum/internal/api"
+	"real-time-forum/internal/repository"
 )
 
 func main() {
@@ -15,19 +15,18 @@ func main() {
 		return
 	}
 
-	were ,err := repository.InitTables(db)
+	were, err := repository.InitTables(db)
 	if err != nil {
-		fmt.Println("Error in intializing of tables:", err , "location:"+were)
+		fmt.Println("Error in intializing of tables:", err, "location:"+were)
 		return
 	}
 
-
 	server := http.Server{
-		Addr:    ":8081",
+		Addr:    ":8080",
 		Handler: api.Routes(db),
 	}
 
-	fmt.Println("http://localhost:8081/")
+	fmt.Println("http://localhost:8080/")
 
 	err = server.ListenAndServe()
 	if err != nil {

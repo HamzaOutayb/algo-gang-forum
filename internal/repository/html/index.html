@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <title>algo gang</title>
+    <!-- <noscript>
+        <meta http-equiv="refresh" content="0;url=/javascript-required">
+    </noscript> -->
+</head>
+
+<body>
+    <header class="header">
+    </header>
+
+    <div class="content-spacer"></div>
+
+
+    <div class="login-container">
+        <p id="errorMessage"></p>
+        <h2>Login</h2>
+        <div class="input-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="button-group">
+            <button type="submit" id="login_button">Login</button>
+        </div>
+        <div class="register-link">
+           <button id="signup_switch_button" >SIGN UP</button>
+        </div>
+    </div>
+
+
+
+    <div class="register-container">
+    
+        <h2>Sign up</h2>
+        <p id="errorMessage"></p>
+        <div class="input-group">
+            <label for="username">Username:</label>
+            <input type="username" id="username" name="username" required>
+        </div>
+
+        <div class="input-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button id="register-button">Create Account</button>
+
+        <div class="register-link">
+            <button id="login_switch_button">login</button>
+        </div>
+</div>
+    <script src="../js/script.js" defer></script>
+</body>
+
+</html>
