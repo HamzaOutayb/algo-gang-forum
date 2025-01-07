@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS post(
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user_profile(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS comment(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS comment(
     post_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user_profile(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS postReact(
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS postReact(
     is_liked INTEGER NOT NULL,
     PRIMARY KEY (post_id, user_id),
     FOREIGN KEY (post_id) REFERENCES post(id),
-    FOREIGN KEY (user_id) REFERENCES user_profile(id)
+    FOREIGN KEY (user_id) REFERENCES user(id)
 );
 CREATE TABLE IF NOT EXISTS commentReact(
     comment_id INTEGER NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS commentReact(
     is_liked INTEGER NOT NULL,
     PRIMARY KEY (comment_id, user_id),
     FOREIGN KEY (comment_id) REFERENCES comment(id),
-    FOREIGN KEY (user_id) REFERENCES user_profile(id)
+    FOREIGN KEY (user_id) REFERENCES user(id)
 );
 CREATE TABLE IF NOT EXISTS categories(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +54,7 @@ SELECT p.id AS post_id,
     COALESCE(l.likes_count, 0) AS post_likes,
     COALESCE(d.dislikes_count, 0) AS post_dislikes
 FROM post p
-    JOIN user_profile u ON p.user_id = u.id
+    JOIN user u ON p.user_id = u.id
     LEFT JOIN (
         SELECT post_id,
             COUNT(*) AS comments_count
@@ -86,7 +86,7 @@ SELECT c.id AS comment_id,
     COALESCE(l.likes_count, 0) AS comment_likes,
     COALESCE(d.dislikes_count, 0) AS comment_dislikes
 FROM comment c
-    JOIN user_profile u ON c.user_id = u.id
+    JOIN user u ON c.user_id = u.id
     LEFT JOIN (
         SELECT comment_id,
             COUNT(*) AS likes_count

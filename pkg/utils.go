@@ -1,10 +1,11 @@
 package utils
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 )
-
 
 func WriteJson(w http.ResponseWriter, statuscode int, Data any) error {
 	w.WriteHeader(statuscode)
@@ -15,7 +16,19 @@ func WriteJson(w http.ResponseWriter, statuscode int, Data any) error {
 	}
 	return nil
 }
-/*
-func ReadJson(r *http.Request) any {
 
-}*/
+func CheckExpiredCookie(uid string, date time.Time, db *sql.DB) bool {
+	var expired time.Time
+	db.QueryRow("SELECT expired_at FROM user_profile WHERE uid = ?", uid).Scan(&expired)
+
+	return date.Compare(expired) <= -1
+}
+
+func Contains(slice []string, str string) bool {
+	for i := 0; i < len(slice); i++ {
+		if slice[i] == str {
+			return true
+		}
+	}
+	return false
+}
