@@ -3,8 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+
 	"real-time-forum/internal/api/bcryptp"
-	"real-time-forum/internal/api/database"
+	"real-time-forum/internal/repository"
+	utils "real-time-forum/pkg"
 )
 
 type Login_session struct {
@@ -14,13 +16,13 @@ type Login_session struct {
 
 func Signin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		//error message
+		// error message
 		return
 	}
 
 	var Log Login_session
 	if erro := json.NewDecoder(r.Body).Decode(&Log); erro != nil {
-		//error message
+		// error message
 		return
 	}
 	r.ParseForm()
@@ -30,20 +32,20 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doz, err := database.GetLogin(Log.Email, Log.Password)
+	doz, err := repository.GetLogin(Log.Email, Log.Password)
 	if err != nil {
-		//error message
+		// error message
 		return
 	}
 	if doz {
 		session, err := bcryptp.CreateSession()
 		if err != nil {
-			//error message
+			// error message
 			return
 		}
-		err = database.AddSession(session.String(), Log.Email)
+		err = repository.AddSession(session.String(), Log.Email)
 		if err != nil {
-			//error message
+			// error message
 			return
 		}
 		cookie := http.Cookie{
@@ -51,16 +53,12 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 			Value: session.String(),
 		}
 		http.SetCookie(w, &cookie)
-		w.WriteHeader(200)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode("login ok")
+		utils.WriteJson(w, 200, "log succesfuly")
 	} else {
 		errorMessage := ""
 		if Log.Email != "" || Log.Password != "" {
 			errorMessage = "Password or email not working"
 		}
-		w.WriteHeader(400)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(errorMessage)
+		utils.WriteJson(w,400,errorMessage)
 	}
 }

@@ -8,13 +8,9 @@ import (
 )
 
 func Routes(db *sql.DB) *http.ServeMux {
-    cssFs := http.FileServer(http.Dir("./internal/repository/style/"))
-    jsFs := http.FileServer(http.Dir("./internal/repository/js/"))
-    fs := http.FileServer(http.Dir("/internal/repository/"))
     mux := http.NewServeMux()
-    mux.Handle("/style/", http.StripPrefix("/style/", cssFs))
-    mux.Handle("/js/", http.StripPrefix("/js/", jsFs))
-    mux.Handle("/internal/repository/", http.StripPrefix("/internal/repository/", fs))
+    FileServer := http.FileServer(http.Dir("./Assets/"))
+    mux.Handle("/Assets/", http.StripPrefix("/Assets/", FileServer))
     mux.HandleFunc("/", handler.HomeHandler)
     return mux
 }
