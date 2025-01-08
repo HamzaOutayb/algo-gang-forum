@@ -1,37 +1,48 @@
 package models
 
 type User struct {
-	Nickname   string
-	Age        string
-	Gender     string
-	First_Name string
-	Last_Name  string
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Uuid     string `json:"uid"`
+	Nickname   string `json:"nickname"`
+	Age        string `json:"Age"`
+	Gender     string `json:"Gender"`
+	First_Name string `json:"first_name"`
+	Last_Name  string `json:"last_name"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	Uuid       string `json:"uid"`
 }
-
 
 var UserErrors struct {
 	InvalidEmail     string
-	InvalidUsername  string
+	InvalideAge      string
+	InvalideGender   string
+	InvalideFirst_Name string
+	InvalideLast_Name string
+	Invalidnickname  string
 	InvalidPassword  string
 	UserAlreadyExist string
 	UserNotExist     string
 } = struct {
 	InvalidEmail     string
-	InvalidUsername  string
+	InvalideAge      string
+	InvalideGender   string
+	InvalideFirst_Name string
+	InvalideLast_Name string
+	Invalidnickname  string
 	InvalidPassword  string
 	UserAlreadyExist string
 	UserNotExist     string
 }{
+	InvalideAge      : "invalide Age",
+	InvalideGender   : "invalide Gender",
+	InvalideFirst_Name : "invalide First_Nam",
+	InvalideLast_Name : "invalide Last_Name",
 	InvalidEmail:     "invalid email",
-	InvalidUsername:  "invalid username",
+	Invalidnickname:  "invalid nickname",
 	InvalidPassword:  "invalid password",
 	UserAlreadyExist: "user already exist",
 	UserNotExist:     "user doesn't exist",
 }
+
 var Errors struct {
 	InvalidCredentials   string
 	InvalidEmail         string

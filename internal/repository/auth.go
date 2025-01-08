@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"real-time-forum/internal/api/bcryptp"
+	"real-time-forum/internal/models"
 )
 
 type Database struct {
@@ -40,9 +41,9 @@ func AddSession(session string, email string) error {
 func (database *Database) CheckIfUserExists(username, email string) bool {
 	var uname string
 	var uemail string
-	database.Db.QueryRow("SELECT username, email FROM user WHERE username = ? AND email = ?",
+	database.Db.QueryRow("SELECT Nickname, email FROM user WHERE Nickname = ? OR email = ?",
 		username, email).Scan(&uname, &uemail)
-	return uname == username && uemail == email
+	return uname == username || uemail == email
 }
 
 func (database *Database) GetUserPassword(email string) (string, error) {
@@ -55,5 +56,11 @@ func (database *Database) GetUserPassword(email string) (string, error) {
 func (database *Database) UpdateUuid(uuid, email string) error {
 	expire := time.Now().Add(time.Hour)
 	_, err := database.Db.Exec("UPDATE user SET uid = ?, expired_at = ? WHERE email = ?", uuid, expire, email)
+	return err
+}
+
+func (database *Database) InsertUser(user models.User) error {
+	_, err := database.Db.Exec("INSERT INTO user (Nickname, Age, Gender, First_Name, Last_Name, email, password, uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		user.Nickname, user.Age, user.Gender, user.First_Name, user.Last_Name, user.Email, user.Password, user.Uuid)
 	return err
 }
