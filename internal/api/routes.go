@@ -12,6 +12,7 @@ func Routes(db *sql.DB) *http.ServeMux {
 	FileServer := http.FileServer(http.Dir("./Assets/"))
 	mux.Handle("/Assets/", http.StripPrefix("/Assets/", FileServer))
 	mux.HandleFunc("/", handler.HomeHandler)
+	//mux.HandleFunc("/Signin", d.Signin)
 	mux.HandleFunc("/post", d.InsertPostsHandler)
 	return mux
 }

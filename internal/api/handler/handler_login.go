@@ -1,64 +1,68 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
-	"real-time-forum/internal/api/bcryptp"
-	"real-time-forum/internal/repository"
+	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
+
+	"github.com/mattn/go-sqlite3"
 )
 
-type Login_session struct {
-	Email    string
-	Password string
-}
-
-func Signin(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		// error message
+func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.WriteJson(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
-	var Log Login_session
-	if erro := json.NewDecoder(r.Body).Decode(&Log); erro != nil {
-		// error message
-		return
-	}
-	r.ParseForm()
-	_, err := r.Cookie("session")
-	if err == nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+	var user models.User
+	if erro := json.NewDecoder(r.Body).Decode(&user); erro != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "Bad request")
 		return
 	}
 
-	doz, err := repository.GetLogin(Log.Email, Log.Password)
+	err := H.Service.LoginUser(&user)
 	if err != nil {
-		// error message
-		return
-	}
-	if doz {
-		session, err := bcryptp.CreateSession()
 		if err != nil {
-			// error message
+			if err == sqlite3.ErrLocked {
+				http.Error(w, "Database Is Busy!", http.StatusLocked)
+				return
+			}
+			// Email
+			if err.Error() == models.Errors.InvalidEmail {
+				http.Error(w, models.Errors.InvalidEmail, http.StatusBadRequest)
+				return
+			}
+			if err.Error() == models.Errors.LongEmail {
+				http.Error(w, models.Errors.LongEmail, http.StatusBadRequest)
+				return
+			}
+
+			// Password
+			if err.Error() == models.Errors.InvalidPassword {
+				http.Error(w, models.Errors.InvalidPassword, http.StatusBadRequest)
+				return
+			}
+			// General: User Doesn't Exist
+			if err.Error() == models.Errors.InvalidCredentials {
+				http.Error(w, models.Errors.InvalidCredentials, http.StatusUnauthorized)
+				return
+			}
+
+			if err == sql.ErrNoRows {
+				http.Error(w, models.Errors.InvalidCredentials, http.StatusUnauthorized)
+				return
+			}
+
+			log.Println("Unexpected error:", err)
+			http.Error(w, "Error While logging To An  Account.", http.StatusInternalServerError)
 			return
 		}
-		err = repository.AddSession(session.String(), Log.Email)
-		if err != nil {
-			// error message
-			return
-		}
-		cookie := http.Cookie{
-			Name:  "session",
-			Value: session.String(),
-		}
-		http.SetCookie(w, &cookie)
-		utils.WriteJson(w, 200, "log succesfuly")
-	} else {
-		errorMessage := ""
-		if Log.Email != "" || Log.Password != "" {
-			errorMessage = "Password or email not working"
-		}
-		utils.WriteJson(w,400,errorMessage)
 	}
+
+	utils.SetSessionCookie(w, user.Uuid)
+	utils.WriteJson(w, http.StatusOK, "You Logged In Successfuly!")
 }

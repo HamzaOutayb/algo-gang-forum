@@ -17,6 +17,25 @@ func WriteJson(w http.ResponseWriter, statuscode int, Data any) error {
 	return nil
 }
 
+// Helpers
+func SetSessionCookie(w http.ResponseWriter, uid string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "session_token",
+		Value:  uid,
+		Path:   "/",
+		MaxAge: 3600,
+	})
+}
+
+func DeleteSessionCookie(w http.ResponseWriter, uid string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "session_token",
+		Value:  uid,
+		Path:   "/",
+		MaxAge: -1,
+	})
+}
+
 func CheckExpiredCookie(uid string, date time.Time, db *sql.DB) bool {
 	var expired time.Time
 	db.QueryRow("SELECT expired_at FROM user_profile WHERE uid = ?", uid).Scan(&expired)

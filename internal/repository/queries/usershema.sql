@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS user(
     First_Name TEXT NOT NULL,
     Last_Name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    eassword TEXT NOT NULL,
+    password TEXT NOT NULL,
     uid TEXT UNIQUE NOT NULL,
     expired_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
