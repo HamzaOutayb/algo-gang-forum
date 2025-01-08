@@ -49,7 +49,7 @@ func (H *Handler) InsertPostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var post models.Post
-	err = json.NewDecoder(r.Body).Decode(post)
+	err = json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
 		utils.WriteJson(w, 500, "internal server err")
 		return

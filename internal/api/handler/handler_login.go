@@ -24,9 +24,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := H.Service.LoginUser(&user)
-	if err != nil {
-		if err != nil {
+	err := H.Service.LoginUser(&user); if err != nil {
 			if err == sqlite3.ErrLocked {
 				http.Error(w, "Database Is Busy!", http.StatusLocked)
 				return
@@ -61,7 +59,6 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error While logging To An  Account.", http.StatusInternalServerError)
 			return
 		}
-	}
 
 	utils.SetSessionCookie(w, user.Uuid)
 	utils.WriteJson(w, http.StatusOK, "You Logged In Successfuly!")

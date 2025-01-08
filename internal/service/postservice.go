@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"errors"
 	"html"
 	"strings"
 
@@ -47,13 +47,13 @@ func (d *Service) CreatePost(post models.Post, uid string) error {
 
 func CheckPostValidation(post models.Post) error {
 	if len(strings.TrimSpace(post.Title)) == 0 || len(post.Title) > 500 {
-		return fmt.Errorf(models.PostErrors.TitleLength)
+		return errors.New("models.PostErrors.TitleLength")
 	}
 	if len(strings.TrimSpace(post.Content)) == 0 || len(post.Content) > 5000 {
-		return fmt.Errorf(models.PostErrors.ContentLength)
+		return errors.New("models.PostErrors.ContentLength")
 	}
 	if post.UserID == 0 {
-		return fmt.Errorf(models.UserErrors.UserNotExist)
+		return errors.New("models.UserErrors.UserNotExist")
 	}
 	return nil
 }
