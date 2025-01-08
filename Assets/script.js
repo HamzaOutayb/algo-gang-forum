@@ -30,7 +30,7 @@ async function Login () {
   let password = document.querySelector('input#password')
   let data = { email: email.value, password: password.value }
   try {
-    let response = await fetch('/Login', {
+    let response = await fetch('/signin', {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -48,10 +48,14 @@ async function Login () {
 }
 
 async function Register () {
-  let user = document.querySelector('input#username')
+  let nickname = document.querySelector('input#Nickname')
+  let age = document.querySelector('input#Age')
+  let gender = document.querySelector('input#Gender')
+  let first_Name = document.querySelector('input#First_Name')
+  let last_Name = document.querySelector('input#Last_Name')
   let email = document.querySelector('input#email')
   let password = document.querySelector('input#password')
-  let data = { email: email.value, password: password.value, user: user.value }
+  let data = { nickname: nickname.value,age: age.value,email: gender.value,gender: first_Name.value,first_Name: last_Name.value, last_Name: email.value, password: password.value }
   try {
     let response = await fetch('/signup', {
       method: 'POST',
