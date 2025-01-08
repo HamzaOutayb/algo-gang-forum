@@ -14,9 +14,9 @@ type Service struct {
 	Database *repository.Database
 }
 
-func (d *Service) CreatePost(post models.Post, uid string) error {
+func (s *Service) CreatePost(post models.Post, uid string) error {
 	var err error
-	post.UserID, err = d.Database.GetUser(uid)
+	post.UserID, err = s.Database.GetUser(uid)
 	if err != nil {
 		return err
 	}
@@ -30,14 +30,14 @@ func (d *Service) CreatePost(post models.Post, uid string) error {
 	post.Title = html.EscapeString(post.Title)
 	post.Content = html.EscapeString(post.Content)
 
-	postId, err := d.Database.InsertPost(post)
+	postId, err := s.Database.InsertPost(post)
 	if err != nil {
 		return err
 	}
 
-	err = d.Database.AddCategoriesToPost(postId, post.Categories)
+	err = s.Database.AddCategoriesToPost(postId, post.Categories)
 	if err != nil {
-		if errDB := d.Database.DeletePost(postId); errDB != nil {
+		if errDB := s.Database.DeletePost(postId); errDB != nil {
 			return errDB
 		}
 		return err
@@ -67,3 +67,13 @@ func removeDuplicate(categories []string) []string {
 	}
 	return result
 }
+
+/*
+func (s *Service) GetPostbyid(idstr string) (int,error) {
+	id,err := strconv.Atoi(idstr)
+	if err != nil {
+		return 0,errors.New("bad request")
+	}
+
+	return s.Database.GetPostbyid(id)
+}*/
