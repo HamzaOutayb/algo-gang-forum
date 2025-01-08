@@ -3,13 +3,14 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
 
-	"github.com/mattn/go-sqlite3"
+	//"github.com/mattn/go-sqlite3"
 )
 
 func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
@@ -25,10 +26,10 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := H.Service.LoginUser(&user); if err != nil {
-			if err == sqlite3.ErrLocked {
+		/*	if err == sqlite3.ErrLocked {
 				http.Error(w, "Database Is Busy!", http.StatusLocked)
 				return
-			}
+			}*/
 			// Email
 			if err.Error() == models.Errors.InvalidEmail {
 				http.Error(w, models.Errors.InvalidEmail, http.StatusBadRequest)
@@ -75,39 +76,45 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "Bad request")
 		return
 	}
+	
 
 	// Proccess Data and Insert it
 	err := H.Service.RegisterUser(&user)
 	if err != nil {
-		if err == sqlite3.ErrLocked {
+		/*if err == sqlite3.ErrLocked {
 			http.Error(w, "Database Is Busy!", http.StatusLocked)
 			return
-		}
+		}*/
 		// Username
 		if err.Error() == models.Errors.InvalidUsername {
+			fmt.Println("Invalid Username")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
+			fmt.Println("Invalid Password")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		// Email
 		if err.Error() == models.Errors.InvalidEmail {
+			fmt.Println("Invalid Email")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if err.Error() == models.Errors.LongEmail {
+			fmt.Println("Long Email")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		// General
 		if err.Error() == models.Errors.UserAlreadyExist {
+			fmt.Println("User Already Exist")
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
-		http.Error(w, "Error While Registering The User.", http.StatusInternalServerError)
+		//http.Error(w, "Error While Registering The User.", http.StatusInternalServerError)
 		return
 	}
 	err = utils.WriteJson(w,http.StatusOK,"You'v loged succesfuly"); if err != nil {
