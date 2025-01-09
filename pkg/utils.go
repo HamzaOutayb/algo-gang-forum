@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 )
 
 func WriteJson(w http.ResponseWriter, statuscode int, Data any) error {
@@ -34,13 +32,6 @@ func DeleteSessionCookie(w http.ResponseWriter, uid string) {
 		Path:   "/",
 		MaxAge: -1,
 	})
-}
-
-func CheckExpiredCookie(uid string, date time.Time, db *sql.DB) bool {
-	var expired time.Time
-	db.QueryRow("SELECT expired_at FROM user_profile WHERE uid = ?", uid).Scan(&expired)
-
-	return date.Compare(expired) <= -1
 }
 
 func Contains(slice []string, str string) bool {

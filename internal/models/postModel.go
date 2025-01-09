@@ -18,6 +18,12 @@ type Post struct {
 	Joined_at     time.Time `json:"joined_at"`
 }
 
+type React struct {
+	Thread_type string `json:"thread_type"`
+	Thread_id   int    `json:"thread_id"`
+	React       int    `json:"react"`
+}
+
 var PostErrors struct {
 	PostNotExist string
 	ContentLength string

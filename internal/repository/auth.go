@@ -64,3 +64,10 @@ func (database *Database) InsertUser(user models.User) error {
 		user.Nickname, user.Age, user.Gender, user.First_Name, user.Last_Name, user.Email, user.Password, user.Uuid)
 	return err
 }
+
+func (database *Database) CheckExpiredCookie(uid string, date time.Time) bool {
+	var expired time.Time
+	database.Db.QueryRow("SELECT expired_at FROM user_profile WHERE uid = ?", uid).Scan(&expired)
+
+	return date.Compare(expired) <= -1
+}

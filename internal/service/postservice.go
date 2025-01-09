@@ -69,11 +69,21 @@ func removeDuplicate(categories []string) []string {
 	return result
 }
 
-func (s *Service) GetPostbyid(idstr string) (int, error) {
-	id, err := strconv.Atoi(idstr)
+func (s *Service) GetPostbyid(idstr string, userid int) (models.Post, error) {
+	postid, err := strconv.Atoi(idstr)
 	if err != nil {
-		return 0, errors.New("bad request")
+		return models.Post{}, errors.New("not found")
 	}
 
-	return s.Database.GetPostbyid(id)
+	post,err :=  s.Database.GetPost(postid,userid); if err != nil {
+		return models.Post{}, err
+	}
+
+	categories, err := s.Database.GetPostCategories(postid); if err != nil {
+		return models.Post{}, err
+	}
+
+	post.Categories = categories
+
+	return post, nil
 }
