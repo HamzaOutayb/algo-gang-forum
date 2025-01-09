@@ -15,7 +15,6 @@ type Post struct {
 	IsDisliked    bool      `json:"isdisliked"`
 	CommentsCount int       `json:"commentsCount"`
 	Categories    []string  `json:"categories"`
-	Joined_at     time.Time `json:"joined_at"`
 }
 
 type React struct {

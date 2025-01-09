@@ -7,7 +7,7 @@ import (
 )
 
 func (database *Database) InsertPost(post models.Post) (int, error) {
-	rowrResult, err := database.Db.Exec("INSERT INTO post (title, content, user_id) VALUES (?, ?, ?)", post.UserID, post.Title, post.Content, post.Joined_at)
+	rowrResult, err := database.Db.Exec("INSERT INTO post (title, content, user_id) VALUES (?, ?, ?)", post.Title, post.Content, post.UserID)
 	if err != nil {
 		return 0, err
 	}
@@ -70,14 +70,14 @@ func (d *Database) DeletePost(post_id int) error {
 func (d *Database) GetPost(id, user_id int) (models.Post, error) {
 	var post models.Post
 
-	row := d.Db.QueryRow(`SELECT  post_id, post_title, post_content, post_date, post_author, post_likes, post_dislikes, post_comments_count, joined_at
+	row := d.Db.QueryRow(`SELECT  post_id, post_title, post_content, post_date, post_author, post_likes, post_dislikes, post_comments_count
 	FROM single_post
 	WHERE post_id = ?`, id)
 
 	if row.Err() != nil {
 		return models.Post{}, row.Err()
 	}
-	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.Created, &post.Author, &post.Likes, &post.Dislikes, &post.CommentsCount, &post.Joined_at)
+	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.Created, &post.Author, &post.Likes, &post.Dislikes, &post.CommentsCount)
 	if err != nil {
 		return models.Post{}, row.Err()
 	}

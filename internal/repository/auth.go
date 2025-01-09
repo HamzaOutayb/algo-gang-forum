@@ -67,7 +67,7 @@ func (database *Database) InsertUser(user models.User) error {
 
 func (database *Database) CheckExpiredCookie(uid string, date time.Time) bool {
 	var expired time.Time
-	database.Db.QueryRow("SELECT expired_at FROM user_profile WHERE uid = ?", uid).Scan(&expired)
+	database.Db.QueryRow("SELECT expired_at FROM user WHERE uid = ?", uid).Scan(&expired)
 
 	return date.Compare(expired) <= -1
 }
