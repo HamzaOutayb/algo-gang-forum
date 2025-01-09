@@ -71,3 +71,25 @@ func (d *Database) GetPostbyid(post_id int) error {
 	var post models.Post
 	err := d.Db.QueryRow("SELECT * FROM single")
 }*/
+
+func (d *Database) Posts(page int) ([]models.Post, error) {
+	var posts []models.Post
+	rows, err := d.Db.Query("SELECT * FROM single_post")
+	if err != nil {
+		return posts, err
+	}
+	if rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID, &post.Content, &post.Created, &post.Title,
+			&post.Author, &post.Joined_at, &post.UserID, &post.CommentsCount,
+			&post.Likes, &post.Dislikes,
+		)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
