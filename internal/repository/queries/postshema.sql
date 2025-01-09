@@ -47,7 +47,7 @@ SELECT p.id AS post_id,
     p.content AS post_content,
     p.created_at AS post_date,
     p.title AS post_title,
-    u.username AS post_author,
+    u.Nickname AS post_author,
     u.created_at AS joined_at,
     u.id AS post_author_id,
     COALESCE(c.comments_count, 0) AS post_comments_count,
@@ -77,12 +77,13 @@ FROM post p
             AND is_liked = 2
         GROUP BY post_id
     ) d ON p.id = d.post_id;
+
 CREATE VIEW IF NOT EXISTS single_comment AS
 SELECT c.id AS comment_id,
     c.content AS comment_content,
     c.created_at AS comment_date,
     c.post_id AS post_id,
-    u.username AS comment_author,
+    u.Nickname AS comment_author,
     COALESCE(l.likes_count, 0) AS comment_likes,
     COALESCE(d.dislikes_count, 0) AS comment_dislikes
 FROM comment c
@@ -103,6 +104,33 @@ FROM comment c
             AND is_liked = 2
         GROUP BY comment_id
     ) d ON c.id = d.comment_id;
+CREATE VIEW IF NOT EXISTS single_comment AS
+SELECT c.id AS comment_id,
+    c.content AS comment_content,
+    c.created_at AS comment_date,
+    c.post_id AS post_id,
+    u.Nickname AS comment_author,
+    COALESCE(l.likes_count, 0) AS comment_likes,
+    COALESCE(d.dislikes_count, 0) AS comment_dislikes
+FROM comment c
+    JOIN user u ON c.user_id = u.id
+    LEFT JOIN (
+        SELECT comment_id,
+            COUNT(*) AS likes_count
+        FROM commentReact
+        WHERE comment_id IS NOT NULL
+            AND is_liked = 1
+        GROUP BY comment_id
+    ) l ON c.id = l.comment_id
+    LEFT JOIN (
+        SELECT comment_id,
+            COUNT(*) AS dislikes_count
+        FROM commentReact
+        WHERE comment_id IS NOT NULL
+            AND is_liked = 2
+        GROUP BY comment_id
+    ) d ON c.id = d.comment_id;
+
 INSERT
     OR IGNORE INTO categories (category_name)
 VALUES ('javascript'),

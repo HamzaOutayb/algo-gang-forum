@@ -66,3 +66,8 @@ func (d *Database) DeletePost(post_id int) error {
 	}
 	return nil
 }
+/*
+func (d *Database) GetPostbyid(post_id int) error {
+	var post models.Post
+	err := d.Db.QueryRow("SELECT * FROM single")
+}*/
