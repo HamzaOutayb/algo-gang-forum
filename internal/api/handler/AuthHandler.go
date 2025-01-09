@@ -13,6 +13,7 @@ import (
 )
 
 func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
+	
 	if r.Method != http.MethodPost {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
@@ -88,6 +89,12 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		
+		//Age
+		if err.Error() == models.UserErrors.InvalideAge {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
 			http.Error(w, err.Error(), http.StatusBadRequest)

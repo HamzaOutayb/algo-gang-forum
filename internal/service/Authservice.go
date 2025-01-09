@@ -75,6 +75,7 @@ func (s *Service) RegisterUser(user *models.User) error {
 	if len((*user).Password) < 6 || len((*user).Password) > 30 {
 		return errors.New(models.Errors.InvalidPassword)
 	}
+
 	// email
 	(*user).Email = strings.ToLower((*user).Email)
 	if EmailChecker((*user).Email) {
@@ -83,12 +84,15 @@ func (s *Service) RegisterUser(user *models.User) error {
 	if len((*user).Email) > 50 {
 		return errors.New(models.Errors.LongEmail)
 	}
+
 	// username or email existance
 	if s.Database.CheckIfUserExists((*user).Nickname, (*user).Email) {
 		return errors.New(models.Errors.UserAlreadyExist)
 	}
+
 	// Generate Uuid
 	(*user).Uuid = GenerateUuid()
+	
 	// Encrypt Pass
 	var err error
 	(*user).Password, err = EncyptPassword((*user).Password)

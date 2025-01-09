@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"html"
+	"strconv"
 	"strings"
 
 	"real-time-forum/internal/models"
@@ -68,12 +69,11 @@ func removeDuplicate(categories []string) []string {
 	return result
 }
 
-/*
-func (s *Service) GetPostbyid(idstr string) (int,error) {
-	id,err := strconv.Atoi(idstr)
+func (s *Service) GetPostbyid(idstr string) (int, error) {
+	id, err := strconv.Atoi(idstr)
 	if err != nil {
-		return 0,errors.New("bad request")
+		return 0, errors.New("bad request")
 	}
 
 	return s.Database.GetPostbyid(id)
-}*/
+}
