@@ -23,8 +23,9 @@ func (H *Handler) ReactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_,err  = H.Service.Database.GetUser(cookie.Value); if err != nil {
-		utils.WriteJson(w, http.StatusBadRequest,"bad request")
+	id, err := H.Service.Database.GetUser(cookie.Value)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
 
@@ -34,20 +35,20 @@ func (H *Handler) ReactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*err = service.ReactService.ReactionService(react, id)
+	err = H.Service.Database.ReactionService(react, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	response, err := service.ReactService.LikesTotal(react.Thread_type, react.Thread_id)
+	response, err := H.Service.LikesTotal(react.Thread_type, react.Thread_id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	response.IsLiked, response.IsDisliked = service.ReactService.GetLikedThread(react.Thread_type, react.Thread_id, id)
+	response.IsLiked, response.IsDisliked = H.Service.GetLikedThread(react.Thread_type, react.Thread_id, id)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&response)*/
+	json.NewEncoder(w).Encode(&response)
 }

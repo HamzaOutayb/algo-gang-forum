@@ -23,6 +23,13 @@ type React struct {
 	React       int    `json:"react"`
 }
 
+type ReactResponse struct {
+	Like       int  `json:"Like"`
+	Dislike    int  `json:"Dislike"`
+	IsLiked    bool `json:"isliked"`
+	IsDisliked bool `json:"isdisliked"`
+}
+
 var PostsPerPage = 20
 
 var PostErrors struct {
