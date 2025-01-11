@@ -2,10 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"time"
-
-	"real-time-forum/internal/api/bcryptp"
+	"real-time-forum/pkg/bcryptp"
 	"real-time-forum/internal/models"
+	"time"
 )
 
 type Database struct {
