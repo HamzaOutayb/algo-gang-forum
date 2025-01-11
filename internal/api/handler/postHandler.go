@@ -3,11 +3,15 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func (H *Handler) InsertPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,4 +94,37 @@ func (H *Handler) GetPostByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJson(w, http.StatusOK, posts)
+}
+
+func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
+	num, _ := strconv.Atoi(r.URL.Query().Get("page-number"))
+
+	var Posts []models.Post
+
+	cookie, err := r.Cookie("session_token")
+	id := 0
+	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
+		id, _ = H.Service.Database.GetUser(cookie.Value)
+	}
+
+	Posts, err = H.Service.GetPost(num, id)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			utils.WriteJson(w, http.StatusOK, []models.Post{})
+			return
+		case sqlite3.ErrLocked:
+			utils.WriteJson(w, http.StatusLocked, struct {
+				Error string `json:"error"`
+			}{Error: "Database Locked"})
+			return
+		}
+
+		log.Println("Unexpected error", err)
+		utils.WriteJson(w, http.StatusInternalServerError, struct {
+			Error string `json:"error"`
+		}{Error: err.Error()})
+		return
+	}
+	utils.WriteJson(w, http.StatusOK, Posts)
 }

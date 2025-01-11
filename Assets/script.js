@@ -38,9 +38,7 @@ async function Login () {
       const errorData = await response.json()
       const errorMessage = document.getElementById('errorMessage')
       errorMessage.innerHTML = errorData
-    } else {
-      window.location.href = '/'
-    }
+    } 
   } catch (error) {
     const errorMessage = document.getElementById('errorMessage')
     errorMessage.innerHTML = 'Network error occurred!'
@@ -65,8 +63,6 @@ async function Register () {
       const errorData = await response.json()
       const errorMessage = document.getElementById('errorMessage')
       errorMessage.innerHTML = errorData
-    } else {
-      window.location.href = '/login'
     }
   } catch (error) {
     const errorMessage = document.getElementById('errorMessage')

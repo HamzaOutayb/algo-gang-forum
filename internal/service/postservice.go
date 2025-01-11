@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"html"
 	"strconv"
@@ -75,15 +76,56 @@ func (s *Service) GetPostbyid(idstr string, userid int) (models.Post, error) {
 		return models.Post{}, errors.New("not found")
 	}
 
-	post,err :=  s.Database.GetPost(postid,userid); if err != nil {
+	post, err := s.Database.GetPost(postid, userid)
+	if err != nil {
 		return models.Post{}, err
 	}
 
-	categories, err := s.Database.GetPostCategories(postid); if err != nil {
+	categories, err := s.Database.GetPostCategories(postid)
+	if err != nil {
 		return models.Post{}, err
 	}
 
 	post.Categories = categories
 
 	return post, nil
+}
+
+func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
+	start := (num * models.PostsPerPage)
+	total := 0
+	err := s.Database.Tablelen("post", &total)
+	if err != nil {
+		return nil, err
+	}
+	if start > total {
+		return nil, sql.ErrNoRows
+	}
+	row, err := s.Database.ExtractPosts(start)
+	if err != nil {
+		return nil, err
+	}
+	var posts []models.Post
+	for row.Next() {
+		var post models.Post
+
+		err := row.Scan(&post.ID, &post.Title, &post.Content, &post.Created, &post.Author, &post.Likes, &post.Dislikes, &post.CommentsCount)
+		if err != nil {
+			return nil, err
+		}
+		post.IsLiked, post.IsDisliked = s.Database.CheckIfLikedPost(post.ID, userID)
+		// Get categories
+		categories, err := s.Database.GetPostCategories(post.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		post.Categories = categories
+
+		posts = append(posts, post)
+	}
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+	return posts, nil
 }

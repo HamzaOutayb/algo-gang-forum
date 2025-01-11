@@ -23,6 +23,8 @@ type React struct {
 	React       int    `json:"react"`
 }
 
+var PostsPerPage = 20
+
 var PostErrors struct {
 	PostNotExist string
 	ContentLength string

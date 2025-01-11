@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
 
 	"real-time-forum/internal/models"
@@ -100,10 +101,10 @@ func (d *Database) CheckIfLikedPost(post_id, user_id int) (bool, bool) {
 	}
 }
 
-func (a *Database) GetPostCategories(postId int) ([]string, error) {
+func (d *Database) GetPostCategories(postId int) ([]string, error) {
 	// Get Categories Ids
 	var names []string
-	rows, err := a.Db.Query(`
+	rows, err := d.Db.Query(`
 	SELECT 
     c.category_name
 FROM 
@@ -123,4 +124,19 @@ WHERE p.id = ?`, postId)
 	}
 
 	return names, nil
+}
+
+func (d *Database) Tablelen(table string, total *int) error {
+	err := d.Db.QueryRow("SELECT COUNT(*) FROM " + table).Scan(total)
+	return err
+}
+
+func (d *Database) ExtractPosts(start int) (*sql.Rows, error) {
+	rows, err := d.Db.Query(`SELECT post_id, post_title, post_content, post_date, post_author, post_likes, post_dislikes, post_comments_count
+	FROM single_post
+   ORDER BY post_date DESC LIMIT ? OFFSET ?`, models.PostsPerPage, start)
+	if err != nil {
+		return nil, err
+	}
+	return rows, err
 }
