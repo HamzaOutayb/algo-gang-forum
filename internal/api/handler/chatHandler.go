@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 
 type Data_send struct {
 	Message         string
-	HistoryMessages []string
+	HistoryMessages map[string]map[string]string
 	List_online     []string
 	List_offline    []string
 }
@@ -62,7 +62,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	conns[user.Value] = conn
 	data.List_online = append(data.List_online, user.Value)
-	data.HistoryMessages = append(data.HistoryMessages, H.Service.GetHistory(user_id,to_id)...)
+	data.HistoryMessages = H.Service.GetHistory(user_id,to_id)
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
