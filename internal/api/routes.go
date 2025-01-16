@@ -17,6 +17,7 @@ func Routes(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("/post", d.InsertPostsHandler)
 	mux.HandleFunc("GET /post/{id}", d.GetPostByIdHandler)
 	mux.HandleFunc("GET /post", d.GetPostHandler)
+	mux.HandleFunc("/chat", d.ChatService)
 	mux.HandleFunc("/api/reaction", d.ReactionHandler)
 	return mux
 }

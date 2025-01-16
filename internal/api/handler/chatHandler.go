@@ -34,13 +34,17 @@ var (
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session")
 	if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	to := r.URL.Query().Get("to")
 	if user.Value == "" {
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
+	}
+	user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
+	if err != nil {
+		// err message
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -58,31 +62,34 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	conns[user.Value] = conn
 	data.List_online = append(data.List_online, user.Value)
+	data.HistoryMessages = append(data.HistoryMessages, H.Service.GetHistory(user_id,to_id)...)
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
 	if err = conn.WriteMessage(1, datajson); err != nil {
 		log.Println(err)
 		return
 	}
+
+
 	fmt.Println(user.Value + " connected")
 	mu.Unlock()
+
 	for {
 		messageType, Message, err := conns[user.Value].ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		user_id, to_id, err := H.Service.Database.GetId(user.Value,to)
+		mu.Lock()
+		err = H.Service.Database.InsertChat(user_id, to_id, Message)
 		if err != nil {
-			//err message
+			// err message
 		}
-		err = H.Service.Database.InsertChat(user_id,to_id,Message)
-		if err != nil {
-			//err message
-		}
+		mu.Unlock()
 		for k, value := range conns {
 			if k == to || k == user.Value {
 				fmt.Println(k)
