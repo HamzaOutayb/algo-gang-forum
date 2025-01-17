@@ -22,7 +22,6 @@ type Data_send struct {
 	Message         string
 	HistoryMessages map[string]map[string]string
 	List_online     []string
-	List_offline    []string
 }
 
 var (

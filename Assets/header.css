@@ -1,0 +1,86 @@
+/* headzer=================================================================> */
+
+
+.header {
+    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 0 1rem;
+}
+
+header img {
+    height: auto; 
+    width: 100px;
+    
+}
+
+.nav-links {
+    display: flex;
+    gap: 5rem;
+    margin-left: 300px;
+}
+
+.nav-links a {
+    color: #4A5568;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0.5rem;
+}
+
+.nav-links a:hover {
+    color: #0066FF;
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    padding: 9px 15px;
+    font-size: 16px;
+    background-color: #525d76;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    white-space: nowrap; 
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    padding: 9px 15px;
+    font-size: 16px;
+    background-color: #525d76;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+}
+
+.logout-button:hover {
+    background-color: #1E40AF; 
+    transform: scale(1.05);
+}
+.logout-button i {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.logout-button:focus {
+    outline: none;
+}
