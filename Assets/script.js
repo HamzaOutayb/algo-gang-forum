@@ -53,9 +53,10 @@ async function Register () {
   let gender = document.querySelector('input#gender')
   let first_Name = document.querySelector('input#first_Name')
   let last_Name = document.querySelector('input#last_Name')
-  let email = document.querySelector('input#email')
-  let password = document.querySelector('input#password')
-  let data = { nickname: nickname.value,age: age.value,email: gender.value,gender: first_Name.value,first_Name: last_Name.value, last_Name: email.value, password: password.value }
+  let email = document.querySelector('input#email_re')
+  let password = document.querySelector('input#password_re')
+  let data = { nickname: nickname.value,age: age.value,email: email.value,gender: gender.value,first_Name: first_Name.value, last_Name: last_Name.value, password: password.value }
+  console.log(data)
   try {
     let response = await fetch('/signup', {
       method: 'POST',
