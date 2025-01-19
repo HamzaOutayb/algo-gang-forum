@@ -1,14 +1,12 @@
-document.querySelector('#register-button').addEventListener('click', Register())
+document.querySelector('#register-button').addEventListener('click', () => {Register()})
 
-document.querySelector('#login_button').addEventListener('click', Login())
+document.querySelector('#login_button').addEventListener('click', () => { Login()})
 
 document
   .querySelector('#signup_switch_button')
   .addEventListener('click', function () {
-    GoToHomePage()
-
-   // document.querySelector('.login-container').style.display = 'none'
-   // document.querySelector('.register-container').style.display = 'flex'
+    document.querySelector('.login-container').style.display = 'none'
+    document.querySelector('.register-container').style.display = 'flex'
   })
 
 document
@@ -28,9 +26,9 @@ async function deleteCookie () {
 }
 
 async function Login (Login_re,key_re) {
-  let email = Login_re | document.querySelector('input#email')  
-  let password = key_re | document.querySelector('input#password')
-  let data = { email: email.value, password: password.value }
+  let email =  document.querySelector('input#email')  
+  let password = document.querySelector('input#password')
+  let data = { email:  Login_re || email.value, password:  key_re || password.value }
   try {
     let response = await fetch('/signin', {
       method: 'POST',
@@ -41,20 +39,20 @@ async function Login (Login_re,key_re) {
       const errorMessage = document.getElementById('errorMessage')
       errorMessage.innerHTML = errorData
     } else {
-      
+      GoToHomePage()
     }
   } catch (error) {
     const errorMessage = document.getElementById('errorMessage')
     errorMessage.innerHTML = 'Network error occurred!'
-  }
+    }
 }
 
 async function Register () {
-  let nickname = document.querySelector('input#Nickname')
-  let age = document.querySelector('input#Age')
-  let gender = document.querySelector('input#Gender')
-  let first_Name = document.querySelector('input#First_Name')
-  let last_Name = document.querySelector('input#Last_Name')
+  let nickname = document.querySelector('input#nickname')
+  let age = document.querySelector('input#age')
+  let gender = document.querySelector('input#gender')
+  let first_Name = document.querySelector('input#first_Name')
+  let last_Name = document.querySelector('input#last_Name')
   let email = document.querySelector('input#email')
   let password = document.querySelector('input#password')
   let data = { nickname: nickname.value,age: age.value,email: gender.value,gender: first_Name.value,first_Name: last_Name.value, last_Name: email.value, password: password.value }
@@ -84,13 +82,11 @@ async function Register () {
   header.classList.add('header');
   header.innerHTML = `
       <div class="header-content">
-          <a href="/">
-              <img src="/styles/logo.png" alt="logo">
-          </a>
-          <nav class="nav-links">
+          <h3>ALGO GANG<h3>
+          <div class="nav-links">
               <a href="/">Home</a>
               <a href="/about">About</a>
-          </nav>
+          </div>
           <div class="logout-container">
               <button class="logout-button" onclick="deleteCookie()">
                   <i class="fas fa-sign-out-alt"></i> Logout

@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"real-time-forum/internal/models"
@@ -14,13 +15,11 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
-
 	var user models.User
 	if erro := json.NewDecoder(r.Body).Decode(&user); erro != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "Bad request")
 		return
 	}
-
 	err := H.Service.LoginUser(&user)
 	if err != nil {
 		/*	if err == sqlite3.ErrLocked {
@@ -39,6 +38,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
+
 			http.Error(w, models.Errors.InvalidPassword, http.StatusBadRequest)
 			return
 		}
@@ -49,6 +49,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err == sql.ErrNoRows {
+			fmt.Println(err)
 			http.Error(w, models.Errors.InvalidCredentials, http.StatusUnauthorized)
 			return
 		}
@@ -75,6 +76,7 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	// Proccess Data and Insert it
 	err := H.Service.RegisterUser(&user)
 	if err != nil {
+		fmt.Println(err)
 		/*	if err == sqlite3.ErrLocked {
 			http.Error(w, "Database Is Busy!", http.StatusLocked)
 			return

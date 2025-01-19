@@ -16,7 +16,7 @@ import (
 func (s *Service) LoginUser(user *models.User) error {
 	// email
 	(*user).Email = strings.ToLower((*user).Email)
-	if EmailChecker((*user).Email) {
+	if !EmailChecker((*user).Email) {
 		return errors.New(models.Errors.InvalidEmail)
 	}
 	if len((*user).Email) > 50 {

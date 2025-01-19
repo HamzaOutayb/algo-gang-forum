@@ -2,8 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"real-time-forum/pkg/bcryptp"
+	"fmt"
 	"real-time-forum/internal/models"
+	"real-time-forum/pkg/bcryptp"
 	"time"
 )
 
@@ -59,6 +60,7 @@ func (database *Database) UpdateUuid(uuid, email string) error {
 }
 
 func (database *Database) InsertUser(user models.User) error {
+	fmt.Println(user.Email)
 	_, err := database.Db.Exec("INSERT INTO user (Nickname, Age, Gender, First_Name, Last_Name, email, password, uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		user.Nickname, user.Age, user.Gender, user.First_Name, user.Last_Name, user.Email, user.Password, user.Uuid)
 	return err
