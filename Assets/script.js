@@ -11,9 +11,7 @@ document
    // document.querySelector('.register-container').style.display = 'flex'
   })
 
-document
-  .querySelector('#login_switch_button')
-  .addEventListener('click', function () {
+document.querySelector('#login_switch_button').addEventListener('click', function () {
     document.querySelector('.register-container').style.display = 'none'
     document.querySelector('.login-container').style.display = 'flex'
   })
@@ -27,22 +25,21 @@ async function deleteCookie () {
   window.location.href = '/'
 }
 
-async function Login (Login_re,key_re) {
-  let email = Login_re | document.querySelector('input#email')  
-  let password = key_re | document.querySelector('input#password')
+async function Login () {
+  let email = document.querySelector('input#email')  
+  let password = document.querySelector('input#password')
   let data = { email: email.value, password: password.value }
+  
   try {
     let response = await fetch('/signin', {
       method: 'POST',
       body: JSON.stringify(data)
     })
-    if (!response.ok) {
+    
       const errorData = await response.json()
       const errorMessage = document.getElementById('errorMessage')
       errorMessage.innerHTML = errorData
-    } else {
-      
-    }
+    
   } catch (error) {
     const errorMessage = document.getElementById('errorMessage')
     errorMessage.innerHTML = 'Network error occurred!'
@@ -122,7 +119,7 @@ async function Register () {
     document.querySelector("link[rel='stylesheet']").href = "post.css"
   //  document.head.appendChild(document.createElement('link').href = "header.css")
 
-    fetch("/post") .then((response) => response.json()).then((e) => {
+    fetch("/post").then((response) => response.json()).then((e) => {
       let ul = document.querySelector('ul')
       e.forEach((data)=> {
           ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">

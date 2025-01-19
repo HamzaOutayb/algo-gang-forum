@@ -10,6 +10,8 @@ import (
 
 	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func (H *Handler) InsertPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -111,11 +113,11 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 		case sql.ErrNoRows:
 			utils.WriteJson(w, http.StatusOK, []models.Post{})
 			return
-			/*case sqlite3.ErrLocked:
+		case sqlite3.ErrLocked:
 			utils.WriteJson(w, http.StatusLocked, struct {
 				Error string `json:"error"`
 			}{Error: "Database Locked"})
-			return*/
+			return
 		}
 
 		log.Println("Unexpected error", err)

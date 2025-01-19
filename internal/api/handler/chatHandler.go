@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"sync"
 
+	"real-time-forum/internal/models"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -20,7 +22,7 @@ var upgrader = websocket.Upgrader{
 
 type Data_send struct {
 	Message         string
-	HistoryMessages map[string]map[string]string
+	HistoryMessages []models.Messagesbody
 	List_online     []string
 }
 
@@ -31,11 +33,12 @@ var (
 )
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
-	user, err := r.Cookie("session")
+	user, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+
 	to := r.URL.Query().Get("to")
 	if user.Value == "" {
 		http.Error(w, "User not specified", http.StatusBadRequest)
@@ -43,13 +46,17 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 	user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
 	if err != nil {
-		// err message
+		// err database locked
+		// err bad request theres no sender or no receiver
+		// err db is locked
 	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
 	defer func() {
 		fmt.Println(user.Value + " disconnected")
 		mu.Lock()
@@ -61,7 +68,9 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	conns[user.Value] = conn
 	data.List_online = append(data.List_online, user.Value)
-	data.HistoryMessages = H.Service.GetHistory(user_id,to_id)
+
+	data.HistoryMessages = H.Service.GetHistory(user_id, to_id)
+
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
@@ -72,7 +81,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
 
 	fmt.Println(user.Value + " connected")
 	mu.Unlock()
