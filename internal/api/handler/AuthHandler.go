@@ -7,6 +7,8 @@ import (
 
 	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
@@ -23,10 +25,10 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 
 	err := H.Service.LoginUser(&user)
 	if err != nil {
-		/*	if err == sqlite3.ErrLocked {
+		if err == sqlite3.ErrLocked {
 			http.Error(w, "Database Is Busy!", http.StatusLocked)
 			return
-		}*/
+		}
 		// Email
 		if err.Error() == models.Errors.InvalidEmail {
 			http.Error(w, models.Errors.InvalidEmail, http.StatusBadRequest)
@@ -75,10 +77,10 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	// Proccess Data and Insert it
 	err := H.Service.RegisterUser(&user)
 	if err != nil {
-		/*	if err == sqlite3.ErrLocked {
+		if err == sqlite3.ErrLocked {
 			http.Error(w, "Database Is Busy!", http.StatusLocked)
 			return
-		}*/
+		}
 		// Username
 		if err.Error() == models.Errors.InvalidUsername {
 			http.Error(w, err.Error(), http.StatusBadRequest)

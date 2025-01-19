@@ -1,4 +1,4 @@
-package handler
+/*package handler
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 	"real-time-forum/internal/models"
 
 	"github.com/gorilla/websocket"
+	"github.com/mattn/go-sqlite3"
 )
 
 var upgrader = websocket.Upgrader{
@@ -23,7 +24,6 @@ var upgrader = websocket.Upgrader{
 type Data_send struct {
 	Message         string
 	HistoryMessages []models.Messagesbody
-	List_online     []string
 }
 
 var (
@@ -46,7 +46,9 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 	user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
 	if err != nil {
-		// err database locked
+		if err == sqlite3.ErrLocked {
+			http.Error(w, "data base locked", http.StatusLocked)
+		}
 		// err bad request theres no sender or no receiver
 		// err db is locked
 	}
@@ -58,8 +60,8 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer func() {
-		fmt.Println(user.Value + " disconnected")
 		mu.Lock()
+		fmt.Println(user.Value + " disconnected")
 		delete(conns, user.Value)
 		mu.Unlock()
 		conn.Close()
@@ -67,40 +69,33 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 	mu.Lock()
 	conns[user.Value] = conn
-	data.List_online = append(data.List_online, user.Value)
 
-	data.HistoryMessages = H.Service.GetHistory(user_id, to_id)
-
-	datajson, err := json.Marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	if err = conn.WriteMessage(1, datajson); err != nil {
-		log.Println(err)
-		return
-	}
-
-	fmt.Println(user.Value + " connected")
+	var Online_users []string
+	Online_users = append(Online_users, user.Value)
 	mu.Unlock()
 
+	go broadcast(conns, Online_users)
+
+	fmt.Println(user.Value + " connected")
+	HistoryMessages := H.Service.GetHistory(user_id, to_id)
+
 	for {
+
 		messageType, Message, err := conns[user.Value].ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		mu.Lock()
+
 		err = H.Service.Database.InsertChat(user_id, to_id, Message)
 		if err != nil {
 			// err message
 		}
-		mu.Unlock()
-		for k, value := range conns {
+
+		for k, conn := range conns {
 			if k == to || k == user.Value {
 				fmt.Println(k)
-				if err := value.WriteMessage(messageType, []byte(user.Value+" : "+string(Message))); err != nil {
+				if err := conn.WriteMessage(messageType, []byte(user.Value+" : "+string(Message))); err != nil {
 					log.Println(err)
 					return
 				}
@@ -108,3 +103,20 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+func broadcast(conns map[string]*websocket.Conn, data any) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	for _, conn := range conns {
+		if err = conn.WriteMessage(1, jsonData); err != nil {
+			log.Println(err)
+			return
+		}
+	}
+}*/
+
+package handler
