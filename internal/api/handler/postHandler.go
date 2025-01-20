@@ -130,8 +130,9 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (H *Handler) GetContactHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
-	if err != http.ErrNoCookie {
+	if err != nil {
 		utils.WriteJson(w, http.StatusNonAuthoritativeInfo, err)
+		return
 	}
 
 	contact, err := H.Service.Database.GetContact(cookie.Value)

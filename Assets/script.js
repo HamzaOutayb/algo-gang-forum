@@ -67,7 +67,6 @@ async function Register () {
   let email = document.querySelector('input#email_re')
   let password = document.querySelector('input#password_re')
   let data = { nickname: nickname.value,age: age.value,email: email.value,gender: gender.value,first_Name: first_Name.value, last_Name: last_Name.value, password: password.value }
-  console.log(data)
   try {
     let response = await fetch('/signup', {
       method: 'POST',
@@ -201,14 +200,14 @@ function GoToLoginPage() {
           </ul>
       </main>
   `;
+ 
 fetch("/contact").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
- console.log(e)
- /* if (e){
-  e.Contact_no_message.forEach((data)=> {
-    aside.innerHTML += `<button>${data}</button><br>`
+  if (e){
+  e.Contact_list.forEach((data)=> {
+    aside.innerHTML += `<button>${data}</button>`
   })
-}*/
+}
 
 
  })
