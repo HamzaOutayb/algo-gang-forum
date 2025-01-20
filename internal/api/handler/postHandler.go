@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -125,4 +126,19 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJson(w, http.StatusOK, Posts)
+}
+
+func (H *Handler) GetContactHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != http.ErrNoCookie {
+		utils.WriteJson(w, http.StatusNonAuthoritativeInfo, err)
+	}
+
+	contact, err := H.Service.Database.GetContact(cookie.Value)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "err")
+		return
+	}
+	fmt.Println(contact)
+	utils.WriteJson(w, http.StatusOK, contact)
 }

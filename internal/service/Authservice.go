@@ -12,8 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func (s *Service) LoginUser(user *models.User) error {
+ func (s *Service) LoginUser(user *models.User) error {
 	// email
 	(*user).Email = strings.ToLower((*user).Email)
 	if !EmailChecker((*user).Email) {

@@ -1,34 +1,45 @@
-document.querySelector('#register-button').addEventListener('click', () => {Register()})
+if (document.cookie) {
+  GoToHomePage()
+}
 
-document.querySelector('#login_button').addEventListener('click', () => { Login()})
+function Start(){
+  if ( document.querySelector('#register-button')){
+    document.querySelector('#register-button').addEventListener('click', () => {Register()})
+  }
+if (document.querySelector('#login_button')) {
+  document.querySelector('#login_button').addEventListener('click', () => { Login()})
+}
+  if (document.querySelector('#signup_switch_button')) {
+  document.querySelector('#signup_switch_button').addEventListener('click', function () {
+      document.querySelector('.login-container').style.display = 'none'
+      document.querySelector('.register-container').style.display = 'flex'
+    })
+  }
+  if (document
+    .querySelector('#login_switch_button')){
+  document
+    .querySelector('#login_switch_button')
+    .addEventListener('click', function () {
+      document.querySelector('.register-container').style.display = 'none'
+      document.querySelector('.login-container').style.display = 'flex'
+    })
+  }
+}
 
-document
-  .querySelector('#signup_switch_button')
-  .addEventListener('click', function () {
-    document.querySelector('.login-container').style.display = 'none'
-    document.querySelector('.register-container').style.display = 'flex'
-  })
-
-document
-  .querySelector('#login_switch_button')
-  .addEventListener('click', function () {
-    document.querySelector('.register-container').style.display = 'none'
-    document.querySelector('.login-container').style.display = 'flex'
-  })
 
 async function deleteCookie () {
   await fetch('/logout', {
     method: 'POST',
-    body: JSON.stringify({ Session: document.cookie.split('=')[1] })
+    body: JSON.stringify({ session_token: document.cookie.split('=')[1] })
   })
-  document.cookie = 'session=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
-  window.location.href = '/'
+  document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
+  GoToLoginPage()
 }
 
 async function Login (Login_re,key_re) {
   let email =  document.querySelector('input#email')  
   let password = document.querySelector('input#password')
-  let data = { email:  Login_re || email.value, password:  key_re || password.value }
+  let data = { email:  Login_re || email.value, password:  key_re || password.value }  
   try {
     let response = await fetch('/signin', {
       method: 'POST',
@@ -75,6 +86,80 @@ async function Register () {
   }
 }
 
+function GoToLoginPage() {
+  document.body.innerHTML = ` 
+  
+  
+  <div class="content-spacer"></div>
+
+
+    <div class="login-container">
+        <p id="errorMessage"></p>
+        <h2>Login</h2>
+        <div class="input-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="button-group">
+            <button type="submit" id="login_button">Login</button>
+        </div>
+        <div class="register-link">
+           <button id="signup_switch_button" >SIGN UP</button>
+        </div>
+    </div>
+
+
+
+    <div class="register-container">
+    
+        <h2>Sign up</h2>
+        <p id="errorMessage"></p>
+        <div class="input-group">
+            <label for="nickname">Nickname:</label>
+            <input type="nickname" id="nickname" name="nickname" required>
+        </div>
+
+        <div class="input-group">
+            <label for="age">Age:</label>
+            <input type="age" id="age" name="age" required>
+        </div>
+        <div class="input-group">
+            <label for="gender">Gender:</label>
+            <input type="gender" id="gender" name="gender" required>
+        </div>
+        <div class="input-group">
+            <label for="first_Name">First_Name:</label>
+            <input type="first_Name" id="first_Name" name="first_Name" required>
+        </div>
+        <div class="input-group">
+            <label for="last_Name">Last_Name:</label>
+            <input type="last_Name" id="last_Name" name="last_Name" required>
+        </div>
+        <div class="input-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email_re" name="email" required>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password_re" name="password" required>
+        </div>
+
+        <button id="register-button">Create Account</button>
+
+        <div class="register-link">
+            <button id="login_switch_button">login</button>
+        </div>
+</div>
+    <script src="/Assets/script.js" defer></script>`
+    Start()
+  
+}
+
  function GoToHomePage() {
   document.body.innerHTML = ""
 
@@ -96,9 +181,12 @@ async function Register () {
       </div>
   `
 
-  let forumContainer = document.createElement('div');
-  forumContainer.classList.add('forum-container');
-  forumContainer.innerHTML = `
+  document.body.appendChild(header)
+  document.body.innerHTML += `
+   <aside class="sidebar-left">
+           <h2>Contact<h2><br>
+
+        </aside>
       <main class="posts-container">
           <form action="/create" method="post">
               <div class="button-wrapper">
@@ -113,13 +201,22 @@ async function Register () {
           </ul>
       </main>
   `;
+fetch("/contact").then(response =>  response.json()).then(e => {
+ let aside = document.querySelector('.sidebar-left')
+ console.log(e)
+ /* if (e){
+  e.Contact_no_message.forEach((data)=> {
+    aside.innerHTML += `<button>${data}</button><br>`
+  })
+}*/
 
-  document.body.appendChild(header)
-    document.body.appendChild(forumContainer)
-    document.querySelector("link[rel='stylesheet']").href = "post.css"
-  //  document.head.appendChild(document.createElement('link').href = "header.css")
 
+ })
+
+    
+    document.querySelector("link[rel='stylesheet']").href = "/Assets/post.css"
     fetch("/post") .then((response) => response.json()).then((e) => {
+      if (e) {
       let ul = document.querySelector('ul')
       e.forEach((data)=> {
           ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">
@@ -142,7 +239,7 @@ async function Register () {
                             <i class="fas fa-thumbs-down"></i>
                             ${data.dislikes}
                         </button>
-                            <button class="show-all-comments" name="id-post" onclick="window.location.href='/comment?id_comment={{ .ID }}&page=1'">Show all
+                            <button class="show-all-comments" name="id-post">Show all
                                 Comment</button>
                     </div>
 
@@ -154,5 +251,8 @@ async function Register () {
                     </form>
                 </li>`
       })
+    }
     })
+   
 }
+Start()
