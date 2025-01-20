@@ -159,11 +159,11 @@ function GoToLoginPage() {
   
 }
 
- function GoToHomePage() {
+async function GoToHomePage() {
   document.body.innerHTML = ""
 
 
-  let header = document.createElement('header');
+  let header = await document.createElement('header');
   header.classList.add('header');
   header.innerHTML = `
       <div class="header-content">
@@ -181,7 +181,7 @@ function GoToLoginPage() {
   `
 
   document.body.appendChild(header)
-  document.body.innerHTML += `
+  document.body.innerHTML +=  `
    <aside class="sidebar-left">
            <h2>Contact<h2><br>
 
@@ -201,11 +201,11 @@ function GoToLoginPage() {
       </main>
   `;
  
-fetch("/contact").then(response =>  response.json()).then(e => {
+await fetch("/contact").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
   if (e){
   e.Contact_list.forEach((data)=> {
-    aside.innerHTML += `<button>${data}</button>`
+    aside.innerHTML += `<button class="users">${data}</button>`
   })
 }
 
@@ -213,8 +213,8 @@ fetch("/contact").then(response =>  response.json()).then(e => {
  })
 
     
-    document.querySelector("link[rel='stylesheet']").href = "/Assets/post.css"
-    fetch("/post") .then((response) => response.json()).then((e) => {
+    document.querySelector("link[rel='stylesheet']").href =  "/Assets/post.css"
+   await fetch("/post") .then((response) => response.json()).then((e) => {
       if (e) {
       let ul = document.querySelector('ul')
       e.forEach((data)=> {
@@ -252,6 +252,19 @@ fetch("/contact").then(response =>  response.json()).then(e => {
       })
     }
     })
-   
+    let users = await document.querySelectorAll("button.users")
+   users.forEach(e => e.addEventListener("click", () => {
+      document.body.innerHTML += `
+      <div class="chat-container">
+    <div class="chat-box" id="chatBox">
+      <!-- Messages will appear here -->
+    </div>
+    <div class="input-area">
+      <input type="text" id="messageInput" class="message-input" placeholder="Type your message...">
+      <button class="send-btn" onclick="submitMessage()">Send</button>
+    </div>
+  </div>
+      `
+   }))
 }
 Start()
