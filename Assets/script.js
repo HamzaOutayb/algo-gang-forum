@@ -187,14 +187,11 @@ async function GoToHomePage() {
 
         </aside>
       <main class="posts-container">
-          <form action="/create" method="post">
               <div class="button-wrapper">
                   <button type="submit">
                       <i class="fas fa-plus-circle"></i> Create Post
                   </button>
               </div>
-          </form>
-
           <h1>Posts</h1>
           <ul>
           </ul>
@@ -242,24 +239,25 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
                                 Comment</button>
                     </div>
 
-                    <form class="comment-form" action="/newcomment" method="POST">
                         <input type="text" name="comment" placeholder="Add a comment..." required>
                         <button type="submit" value="${data.id}" name="id-post">
-                            <i class="fas fa-comment"></i>
+                            <i class="fas fa-comment">add</i>
                         </button>
-                    </form>
                 </li>`
       })
     }
     })
-  function loop() {
+ function loop() {
       let users = document.querySelectorAll("button.users")
+      
       users.forEach(e => e.addEventListener("click", async () => {
-         document.body.innerHTML += `
+         var TO = e.innerHTML;
+         
+         document.querySelector("main").innerHTML = `
          <div class="chat-container">
          <button class="X">X</button>
+         <h3>${TO}</h3>
        <div class="chat-box" id="chatBox">
-         <!-- Messages will appear here -->
        </div>
        <div class="input-area">
          <input type="text" id="messageInput" class="message-input" placeholder="Type your message...">
@@ -267,17 +265,41 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
        </div>
      </div>
          `
-         await fetch("/chathistory").then(response => response.json()).then(data => {
-           const chatbox = document.querySelector()
+         await fetch("/api/chathistory", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: TO }) 
+         }).then(response => response.json()).then(data => {
+          if (data) {
+           const chatbox = document.querySelector("#chatBox")
            data.forEach(e => {
-                chatbox.innerHTML += `<p>${e}</p>`
+            if (e.Sender == TO) {
+              chatbox.innerHTML += `
+              <h4>${e.Sender} :</h4>
+              <div class="message_to">
+                <p>${e.Content}</p>
+              </div>
+              <h6>${e.Created_at}</h6></br>
+              `
+            }else{
+              chatbox.innerHTML += `
+             <h4>${e.Sender} :</h4>
+              <div class="message_to">
+                <p>${e.Content}</p>
+              </div>
+              <h6>${e.Created_at}</h6></br>
+              `
+            }
            })
-         })
-         document.querySelector(".X").addEventListener("click", ()=> {
-           document.querySelector(".chat-container").remove()
-           loop()
+          }
+          document.querySelector(".X").addEventListener("click", () => {
+            GoToHomePage()
+          })
          })
       }))
+      
     }
   loop()
 }

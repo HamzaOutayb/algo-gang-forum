@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"sync"
 
+	utils "real-time-forum/pkg"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -18,10 +20,13 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type Message struct {
+	Message string
+}
+
 type Data_send struct {
-	Message         string
-	HistoryMessages map[string]map[string]string
-	List_online     []string
+	Message     string
+	List_online []string
 }
 
 var (
@@ -33,7 +38,7 @@ var (
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
 	to := r.URL.Query().Get("to")
@@ -61,7 +66,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	conns[user.Value] = conn
 	data.List_online = append(data.List_online, user.Value)
-	data.HistoryMessages = H.Service.GetHistory(user_id,to_id)
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
@@ -72,7 +76,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
 
 	fmt.Println(user.Value + " connected")
 	mu.Unlock()
@@ -98,5 +101,43 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	}
+}
+
+func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
+		return
+	}
+	to := Message{
+		Message: "string",
+	}
+	user, err := r.Cookie("session_token")
+	if err != nil {
+		
+		utils.WriteJson(w, 500, "no cookies")
+		return
+	}
+	err = json.NewDecoder(r.Body).Decode(&to)
+	if err != nil {
+		utils.WriteJson(w, 500, "err to")
+		return
+	}
+	user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
+	if err != nil {
+		utils.WriteJson(w, 500, "err looking for ids")
+		return
+	}
+	HistoryMessages, err := H.Service.Database.HistoryMessages(user_id, to_id)
+	if err != nil {
+		utils.WriteJson(w, 500, "err history")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(HistoryMessages)
+	if err != nil {
+		utils.WriteJson(w, 500, "err send")
+		return
 	}
 }

@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -140,6 +139,5 @@ func (H *Handler) GetContactHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "err")
 		return
 	}
-	fmt.Println(contact)
 	utils.WriteJson(w, http.StatusOK, contact)
 }

@@ -1,12 +1,21 @@
 package repository
 
-func (Database *Database) HistoryMessages(from,to int) (map[string]map[string]string,error) {
+import "fmt"
+
+type Conversations struct {
+	Sender     string
+	Content    string
+	Created_at string
+}
+
+func (Database *Database) HistoryMessages(from, to int) ([]Conversations, error) {
 	conversations_id := 0
-	conversations := make(map[string]map[string]string)
-	Database.Db.QueryRow("SELECTE id FROM conversations WHERE user_one = ? AND user_two = ?",from,to).Scan(conversations_id)
-	rows,err := Database.Db.Query("SELECTE sender_id,content,created_at FROM messages WHERE conversation_id = ? ",from,to,conversations_id)
-	if (err != nil){
-		return conversations,err
+	var result []Conversations
+	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_two = ? AND user_one = ?)", from, to, from, to).Scan(&conversations_id)
+	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ", conversations_id)
+	fmt.Println(from,to,conversations_id)
+	if err != nil {
+		return []Conversations{}, err
 	}
 	for rows.Next() {
 		var sender, message, date string
@@ -14,16 +23,17 @@ func (Database *Database) HistoryMessages(from,to int) (map[string]map[string]st
 		if err != nil {
 			return nil, err
 		}
-
-		if conversations[sender] == nil {
-			conversations[sender] = make(map[string]string)
+		var messages = Conversations{
+			Sender:     sender,
+			Content:    message,
+			Created_at: date,
 		}
-		conversations[sender][message] = date
+		result = append(result, messages)
 	}
-
+	fmt.Println(result)
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-return conversations,nil
-	
+	return result, nil
+
 }
