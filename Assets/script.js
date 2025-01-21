@@ -252,19 +252,33 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
       })
     }
     })
-    let users = await document.querySelectorAll("button.users")
-   users.forEach(e => e.addEventListener("click", () => {
-      document.body.innerHTML += `
-      <div class="chat-container">
-    <div class="chat-box" id="chatBox">
-      <!-- Messages will appear here -->
-    </div>
-    <div class="input-area">
-      <input type="text" id="messageInput" class="message-input" placeholder="Type your message...">
-      <button class="send-btn" onclick="submitMessage()">Send</button>
-    </div>
-  </div>
-      `
-   }))
+  function loop() {
+      let users = document.querySelectorAll("button.users")
+      users.forEach(e => e.addEventListener("click", async () => {
+         document.body.innerHTML += `
+         <div class="chat-container">
+         <button class="X">X</button>
+       <div class="chat-box" id="chatBox">
+         <!-- Messages will appear here -->
+       </div>
+       <div class="input-area">
+         <input type="text" id="messageInput" class="message-input" placeholder="Type your message...">
+         <button class="send-btn">Send</button>
+       </div>
+     </div>
+         `
+         await fetch("/chathistory").then(response => response.json()).then(data => {
+           const chatbox = document.querySelector()
+           data.forEach(e => {
+                chatbox.innerHTML += `<p>${e}</p>`
+           })
+         })
+         document.querySelector(".X").addEventListener("click", ()=> {
+           document.querySelector(".chat-container").remove()
+           loop()
+         })
+      }))
+    }
+  loop()
 }
 Start()
