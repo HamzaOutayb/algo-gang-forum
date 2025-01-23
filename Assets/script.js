@@ -256,7 +256,7 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
          document.querySelector("main").innerHTML = `
          <div class="chat-container">
          <button class="X">X</button>
-         <h3>${TO}</h3>
+         <h3 id="TO">${TO}</h3>
        <div class="chat-box" id="chatBox">
        </div>
        <div class="input-area">
@@ -294,6 +294,7 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
             }
            })
           }
+          startchat()
           document.querySelector(".X").addEventListener("click", () => {
             GoToHomePage()
           })
@@ -304,3 +305,28 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
   loop()
 }
 Start()
+
+async  function  startchat() {
+  let to = document.querySelector('#TO').innerHTML;
+  const webs =  `ws://localhost:8080/chat?to=${to}`
+  if (to === '') {
+      return;
+  }
+  console.log("test",webs,to);
+  
+  let ws = new WebSocket(webs)
+
+  const chatBox = document.getElementById('messageInput');
+  const button = document.querySelector('.send-btn');
+  button.addEventListener('click', () => {
+      ws.send(chatBox.value);
+      chatBox.value = '';
+  });
+
+  ws.onmessage = (message) => {
+  const parsedMessage = JSON.parse(message.data);
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML += `<p>${parsedMessage.Sender}: ${parsedMessage.Message}</p>`;
+    };
+};
+

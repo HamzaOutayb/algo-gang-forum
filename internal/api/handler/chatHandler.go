@@ -25,8 +25,8 @@ type Message struct {
 }
 
 type Data_send struct {
+	Sender string
 	Message     string
-	List_online []string
 }
 
 var (
@@ -36,7 +36,7 @@ var (
 )
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
-	user, err := r.Cookie("session")
+	user, err := r.Cookie("session_token")
 	if err != nil {
 		utils.WriteJson(w, 500, "no cookies")
 		return
@@ -46,7 +46,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
+	user_name,to, user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
 	if err != nil {
 		// err message
 	}
@@ -56,7 +56,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() {
-		fmt.Println(user.Value + " disconnected")
+		fmt.Println(user_name + " disconnected")
 		mu.Lock()
 		delete(conns, user.Value)
 		mu.Unlock()
@@ -65,7 +65,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 	mu.Lock()
 	conns[user.Value] = conn
-	data.List_online = append(data.List_online, user.Value)
+	/*data.List_online = append(data.List_online, user.Value)
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
@@ -75,9 +75,9 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	if err = conn.WriteMessage(1, datajson); err != nil {
 		log.Println(err)
 		return
-	}
+	}*/
 
-	fmt.Println(user.Value + " connected")
+	fmt.Println(user_name + " connected")
 	mu.Unlock()
 
 	for {
@@ -87,15 +87,24 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		mu.Lock()
+		data := Data_send {
+			Sender: user_name,
+			Message: string(Message),
+		}
+		datajson, err := json.Marshal(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 		err = H.Service.Database.InsertChat(user_id, to_id, Message)
 		if err != nil {
-			// err message
+			fmt.Println(err)
 		}
 		mu.Unlock()
 		for k, value := range conns {
 			if k == to || k == user.Value {
 				fmt.Println(k)
-				if err := value.WriteMessage(messageType, []byte(user.Value+" : "+string(Message))); err != nil {
+				if err := value.WriteMessage(messageType, datajson); err != nil {
 					log.Println(err)
 					return
 				}
@@ -123,7 +132,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err to")
 		return
 	}
-	user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
+	_,_,user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
 	if err != nil {
 		utils.WriteJson(w, 500, "err looking for ids")
 		return
