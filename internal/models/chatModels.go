@@ -11,3 +11,9 @@ type Messagesbody struct {
 	Message string
 	Date    string
 }
+
+type Chat struct {
+	Id string `json:"id"`
+	Nickname string `json:"nickname"`
+	FriendsId string `json:"friendid"`
+}

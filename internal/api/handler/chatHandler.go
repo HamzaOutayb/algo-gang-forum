@@ -1,13 +1,17 @@
-/*package handler
+package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
+	"time"
 
 	"real-time-forum/internal/models"
+	utils "real-time-forum/pkg"
 
 	"github.com/gorilla/websocket"
 	"github.com/mattn/go-sqlite3"
@@ -77,7 +81,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	go broadcast(conns, Online_users)
 
 	fmt.Println(user.Value + " connected")
-	HistoryMessages := H.Service.GetHistory(user_id, to_id)
+	// HistoryMessages := H.Service.GetHistory(user_id, to_id)
 
 	for {
 
@@ -117,6 +121,41 @@ func broadcast(conns map[string]*websocket.Conn, data any) {
 			return
 		}
 	}
-}*/
+}
 
-package handler
+func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+		return
+	}
+
+	cookie, err := r.Cookie("Session_token")
+	usrid := 0
+	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
+		usrid, _ = H.Service.Database.GetUser(cookie.Value)
+	} else {
+		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized user")
+		return
+	}
+	pagenm := r.URL.Query().Get("Page-num")
+	page, err := strconv.Atoi(pagenm)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+		return
+	}
+	
+	chat, err := H.Service.GetLastconversations(page, usrid)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			utils.WriteJson(w, http.StatusOK, []models.Chat{})
+			return
+		case sqlite3.ErrLocked:
+			utils.WriteJson(w, http.StatusLocked, struct {
+				Error string `json:"error"`
+			}{Error: "Database Locked"})
+			return			
+		}
+	}
+	utils.WriteJson(w, http.StatusOK, chat)
+}

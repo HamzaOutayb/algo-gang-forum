@@ -140,3 +140,18 @@ func (d *Database) ExtractPosts(start int) (*sql.Rows, error) {
 	}
 	return rows, err
 }
+
+// Check if the post is exist using the id
+func (database *Database) CheckPostExist(id int) bool {
+	err := database.Db.QueryRow("SELECT id FROM post WHERE id = ?", id).Scan(&id)
+	return err == nil
+}
+
+// Insert a comment into the comment table in the database
+func (database *Database) InsertComment(comment models.Comment) error {
+	_, err := database.Db.Exec(
+		"INSERT INTO comment (user_id, post_id, content) VALUES (?, ?, ?)",
+		comment.UserId, comment.PostId, comment.Content)
+
+	return err
+}

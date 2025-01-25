@@ -12,7 +12,7 @@ import (
 func Routes(db *sql.DB) *http.ServeMux {
 	d := handler.NewHandler(db)
 	mux := http.NewServeMux()
-	
+
 	FileServer := http.FileServer(http.Dir("./Assets/"))
 	mux.Handle("/Assets/", http.StripPrefix("/Assets/", FileServer))
 	mux.HandleFunc("/", handler.HomeHandler)
@@ -27,11 +27,10 @@ func Routes(db *sql.DB) *http.ServeMux {
 	addCommentHandler := ratelimiter.AddCommentsLimter.RateMiddleware(http.HandlerFunc(d.AddCommentHandler), 10, 2*time.Second, db)
 	mux.Handle("/comment", addCommentHandler)
 
-	 
 	reactionRateLimiter := ratelimiter.ReactionsLimiter.RateMiddleware(http.HandlerFunc(d.ReactionHandler), 10, 500*time.Millisecond, db)
 	mux.Handle("/api/reaction", reactionRateLimiter)
-	 
-	//mux.HandleFunc("/chat", d.ChatService)
+	mux.HandleFunc("/chat", d.ChatService)
+	mux.HandleFunc("/Lastconversation/", d.Lastconversation)
 
 	go func() {
 		for {

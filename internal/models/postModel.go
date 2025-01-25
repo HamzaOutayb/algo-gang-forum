@@ -30,6 +30,13 @@ type ReactResponse struct {
 	IsDisliked bool `json:"isdisliked"`
 }
 
+type Comment struct {
+	UserId  int
+	UserUID string
+	PostId  int    `json:"postId"`
+	Content string `json:"content"`
+}
+
 var PostsPerPage = 20
 
 var PostErrors struct {

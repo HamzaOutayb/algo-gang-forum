@@ -2,47 +2,66 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
 	"real-time-forum/internal/models"
+	utils "real-time-forum/pkg"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// parse data
+	comment := models.Comment{}
+	err := json.NewDecoder(r.Body).Decode(&comment)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	react := models.React{}
-	json.NewDecoder(r.Body).Decode(&react)
 	cookie, err := r.Cookie("session_token")
 	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	id, _ := H.Service.Database.GetUser(cookie.Value)
-
-	err = H.Service.CheckReactInput(react)
+	// Validate Inputs
+	err = H.Service.ValidateInput(comment)
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = H.Service.Database.ReactionService(react, id)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	// Check if the user exist
+	usrid, _ := H.Service.Database.GetUser(cookie.Value)
+	if usrid == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	response, err := H.Service.LikesTotal(react.Thread_type, react.Thread_id)
+	// add userUid to the comment
+	comment.UserUID = cookie.Value
+
+	// add the comment using the AddComment from the service layer
+	err = H.Service.AddComment(comment)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
+		switch err.Error() {
+		case sqlite3.ErrLocked.Error():
+			http.Error(w, "Database locked", http.StatusLocked)
+			return
+		case models.PostErrors.PostNotExist:
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		default:
+			log.Printf("Unexpected Error when we add comment %s", err.Error())
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 
-	response.IsLiked, response.IsDisliked = H.Service.GetLikedThread(react.Thread_type, react.Thread_id, id)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&response)
+	// return a success response
+	utils.WriteJson(w, http.StatusCreated, struct{ Message string }{
+		Message: "Your comment added successfuly",
+	})
 }
