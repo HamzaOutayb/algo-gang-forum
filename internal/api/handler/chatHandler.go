@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	utils "real-time-forum/pkg"
 
@@ -25,12 +26,14 @@ type Message struct {
 }
 
 type Data_send struct {
-	Sender string
-	Message     string
+	Sender  string
+	Message string
+	Date    time.Time
+	To string
 }
 
 var (
-	conns = make(map[string]*websocket.Conn)
+	conns = make(map[int]*websocket.Conn)
 	mu    = &sync.Mutex{}
 	data  Data_send
 )
@@ -41,12 +44,12 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
-	to := r.URL.Query().Get("to")
+	To := r.URL.Query().Get("to")
 	if user.Value == "" {
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	user_name,to, user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
+	user_name, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, To)
 	if err != nil {
 		// err message
 	}
@@ -58,14 +61,14 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		fmt.Println(user_name + " disconnected")
 		mu.Lock()
-		delete(conns, user.Value)
+		delete(conns, user_id)
 		mu.Unlock()
 		conn.Close()
 	}()
 
 	mu.Lock()
-	conns[user.Value] = conn
-	/*data.List_online = append(data.List_online, user.Value)
+	conns[user_id] = conn
+	/*data.List_online = append(data.List_online, user_id)
 	datajson, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
@@ -81,29 +84,29 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	mu.Unlock()
 
 	for {
-		messageType, Message, err := conns[user.Value].ReadMessage()
+		messageType, Message, err := conns[user_id].ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		mu.Lock()
-		data := Data_send {
-			Sender: user_name,
+		data := Data_send{
+			Sender:  user_name,
 			Message: string(Message),
+			Date: time.Now(),
 		}
 		datajson, err := json.Marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		err = H.Service.Database.InsertChat(user_id, to_id, Message)
 		if err != nil {
 			fmt.Println(err)
 		}
 		mu.Unlock()
 		for k, value := range conns {
-			if k == to || k == user.Value {
-				fmt.Println(k)
+			if k == to_id || k == user_id {
 				if err := value.WriteMessage(messageType, datajson); err != nil {
 					log.Println(err)
 					return
@@ -123,7 +126,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := r.Cookie("session_token")
 	if err != nil {
-		
+
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
@@ -132,7 +135,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err to")
 		return
 	}
-	_,_,user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
+	_, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
 	if err != nil {
 		utils.WriteJson(w, 500, "err looking for ids")
 		return

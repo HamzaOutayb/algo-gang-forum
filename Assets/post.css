@@ -7,7 +7,7 @@
 
 body {
 
-    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
+    background: #151616;
     min-height: 100vh;
 }
 
@@ -18,17 +18,22 @@ body {
 /* side bar css ============================> */
 .sidebar-left {
     position: fixed;
+    display: flex;
+    flex-direction: column;
     height: 85vh;
     padding: 20px;
     box-sizing: border-box;
-    overflow-y: auto;
-    margin-left: 60px;
-    margin-top: 10px;
+    box-shadow: 3px 2px 2px 3px rgba(235, 85, 16, 0.7);
+    width: 250px;
+    margin-left: 5px;
+    margin-top: 120px;
 }
 
 .sidebar-buttons {
     display: flex;
     flex-direction: column;
+    background-color: #EBF8FF;
+    border-radius: 20px;
     gap: 10px;
 }
 .sidebar-button7{
@@ -46,8 +51,8 @@ body {
     margin-bottom: 10px; 
 }
 
-.sidebar-button {
-    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
+.users {
+    background: white;
     border: none;
     text-align: left;
     font-size: 16px;
@@ -55,36 +60,18 @@ body {
     color: #333;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: color 0.3s, background 0.3s;
+    transition: color 0.3s;
     width: 186px;
     border-radius: 20px;
     margin-bottom: 10px;
 }
 
-.sidebar-button:hover {
-    color: #2563EB;
-    background: #EBF8FF;
+.users:hover {
+    color: #e63900;
 }
-
-.sidebar-button.selected {
-    color: #FFF;
-    background: #525d76;
-}
-
-.sidebar-button7.selected {
-    color: #FFF;
-    background: #525d76; 
-}
-
-.sidebar-button i {
-    font-size: 18px; 
-    color: inherit; 
-    margin-right: 4px;
-}
-
 
 .sidebar-left h2 {
-    color: #2563EB;
+    color: #e63900;
     font-size: 20px;
     margin-bottom: 1rem;
 }
@@ -93,36 +80,46 @@ body {
     margin-left: 250px;
     padding: 20px;
     flex: 1;
+
 }
 
 
 .posts-container h1 {
-    color: #2563EB;
+    color: rgb(235, 85, 16);
     font-size: 24px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 10px;
+    margin-top: 120px;
 }
 
 .post-item {
-    background: white;
+    background: rgba(20, 16, 16, 0.445);
     width: 80%;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(235, 85, 16, 0.1);
     margin-bottom: 1rem;
     margin-left: 25px;
     list-style: none;
 }
 
 .username {
-    color: #2563EB;
+    color: #ffffff;
     font-size: 14px;
     margin-bottom: 0.5rem;
 }
 
 .post-item h3 {
     font-size: 18px;
-    color: #111827;
+    color: #ffffff;
     margin-bottom: 0.5rem;
+}
+.post-item input {
+    color: #ffffff;
+    width: 90%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: none;
+    background-color: #333;
 }
 
 .category {
@@ -137,10 +134,7 @@ body {
     margin: 1rem 0;
 }
 
-form {
-    display: flex;
-    align-items: center;
-}
+
 
 .comment-buttons {
     display: flex;
@@ -153,16 +147,13 @@ form {
     color: black;
     border: none;
     padding: 0.5rem 1rem;
-    margin-left: 38rem;
+    margin-left: 20px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
     transition: background-color 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
 }
 
 .like-comment-btn,
@@ -183,7 +174,7 @@ form {
 .show-all-comments:hover,
 .like-comment-btn:hover,
 .dislike-comment-btn:hover {
-    background-color: #1E4DAA;
+    background-color: #e63900;
 }
 
 .like-comment-btn i,
@@ -204,7 +195,7 @@ form {
 
 .highlight-dislike {
     background-color: black;
-    color: white;
+    color: #e63900;
 }
 
 
@@ -243,31 +234,24 @@ form {
     background-color: #1D4ED8;
 }
 
-form[action="/post/create"] button {
-    background-color: #2563EB;
-    color: white;
-    padding: 0.6rem 1.2rem;
-    font-size: 16px;
-    font-weight: 500;
+.button-wrapper > button  {
     border: none;
+    padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1rem;
-    margin-right: 0;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    float: right;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #e63900;
 }
-
-form[action="/post/create"] button i {
+.button-wrapper > button i {
     font-size: 20px;
 }
 
-form[action="/post/create"] button:hover {
-    background-color: #1D4ED8;
+.button-wrapper > button:hover {
+    background-color: #d8491d;
 }
 
 .post-item p {
@@ -311,87 +295,85 @@ form[action="/post/create"] button:hover {
     margin-left: auto; 
 }
 
-
-/* ================================================> */
-
-
-form .button-wrapper {
-    width: 81%;
-    text-align: right;
-}
-
-form .button-wrapper button {
-    background-color: #525d76;
-    color: white;
-    padding: 0.6rem 1.2rem;
-    font-size: 16px;
-    font-weight: 500;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-form .button-wrapper button i {
-    font-size: 20px;
-}
-
-form .button-wrapper button:hover {
-    background-color: #1D4ED8;
-}
-
-
 .content-full {
     display: none;
 }
 
-.more-button {
-    background-color: #2563EB;
+.chat-container {
+    position: fixed;
+    top: 20%;
+    width: 900px;
+    left: 20%;
+    background-color:rgba(95, 80, 80, 0.1);
+    border: 1px solid #ac3701;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    height: 500px;
+  }
+
+  .chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: rgb(123, 121, 145);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 300px;
+  }
+
+  .input-area {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .message-input {
+    width: 83%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .send-btn {
+    width: 15%;
+    background-color: #ec8946;
     color: white;
     border: none;
-    padding: 0.5rem 1rem;
-    font-size: 14px;
-    cursor: pointer;
+    padding: 10px;
     border-radius: 5px;
-    margin-top: 10px;
-}
+    cursor: pointer;
+  }
 
-.more-button:hover {
-    background-color: #1D4ED8;
-}
+  .send-btn:hover {
+    background-color: #a1440e;
+  }
 
-
-
-.pagination-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.pagination-buttons button {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffffff;
-    background-color: #3498db;
+  .message_to {
+    margin-bottom: 10px;
+    background-color: #90b4db;
+  }
+  .message_sender {
+    justify-items: end;
+    margin-bottom: 10px;
+    background-color: #1a5faa;
+  }
+  .X {
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    width: 50px;
+    color: #fa0000;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: pointer;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-left: 25%;
-    margin-right: 40%;
-}
+  }
 
-.pagination-buttons button:hover {
-    background-color: #2980b9;
-}
-
-.pagination-buttons button:active {
-    background-color: #1c6693;
-}
-
+ #TO {
+    color: #ffffff;
+    font-size: 30px;
+   top: 10px;
+   left: 10px;
+ }

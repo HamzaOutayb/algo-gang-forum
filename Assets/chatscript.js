@@ -17,7 +17,12 @@ async  function  start() {
       ws.onmessage = (message) => {
       const parsedMessage = JSON.parse(message.data);
       const chatBox = document.getElementById('chatBox');
-      chatBox.innerHTML += `<p>${parsedMessage.sender}: ${parsedMessage.message}</p>`;
+      chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
+              <div class="message_to">
+                <p>${parsedMessage.Content}</p>
+              </div>
+              <h6>${parsedMessage.Date}</h6></br>`;
         };
+    
   };
 

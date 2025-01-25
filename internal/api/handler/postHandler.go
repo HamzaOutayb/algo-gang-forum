@@ -92,6 +92,7 @@ func (H *Handler) GetPostByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJson(w, http.StatusOK, posts)
+	return
 }
 
 func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {

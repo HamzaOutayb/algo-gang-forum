@@ -1,86 +1,73 @@
-/* headzer=================================================================> */
-
-
-.header {
-    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 1000;
+/* General reset for margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+/* Header container */
 .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    padding: 0 1rem;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: #151616; /* Dark background */
+    color: #fff; /* White text */
+    font-family: Arial, sans-serif;
+    box-shadow: 0 2px 5px rgba(235, 85, 16, 0.3); /* Subtle shadow */
 }
 
-header img {
-    height: auto; 
-    width: 100px;
-    
+/* Header title */
+.header-content h3 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
 }
 
+/* Navigation links */
 .nav-links {
     display: flex;
-    gap: 5rem;
-    margin-left: 300px;
+    gap: 20px; /* Space between links */
 }
 
 .nav-links a {
-    color: #4A5568;
+    color: #fff;
     text-decoration: none;
     font-size: 16px;
-    font-weight: 500;
-    padding: 0.5rem;
+    transition: color 0.3s ease;
 }
 
 .nav-links a:hover {
-    color: #0066FF;
+    color: #ffa500; /* Orange color on hover */
 }
 
-.logout-button {
+/* Logout button container */
+.logout-container {
     display: flex;
     align-items: center;
-    padding: 9px 15px;
-    font-size: 16px;
-    background-color: #525d76;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    white-space: nowrap; 
 }
 
+/* Logout button */
 .logout-button {
-    display: flex;
-    align-items: center;
-    padding: 9px 15px;
-    font-size: 16px;
-    background-color: #525d76;
-    color: white;
+    background-color: #e63900; /* Reddish-orange */
+    color: #fff;
     border: none;
-    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    white-space: nowrap;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
 .logout-button:hover {
-    background-color: #1E40AF; 
-    transform: scale(1.05);
-}
-.logout-button i {
-    margin-right: 8px;
-    font-size: 18px;
+    background-color: #e63900; /* Darker shade on hover */
 }
 
-.logout-button:focus {
-    outline: none;
+/* Icon inside the logout button */
+.logout-button i {
+    margin-right: 5px;
 }

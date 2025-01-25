@@ -1,0 +1,110 @@
+body {
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    padding: 70px 30px;
+    border-radius: 35px;
+    box-shadow: 0px 4px 8px rgba(235, 85, 16, 0.8);
+    text-align: center;
+}
+
+.register-container {
+    display: none;
+    flex-direction: column;
+    width: 400px;
+    padding: 70px 30px;
+    border-radius: 35px;
+    box-shadow: 0px 4px 8px rgba(235, 85, 16, 0.8);
+    text-align: center;
+    margin-top: 70px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-family: monospace;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+
+label {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 15px;
+    padding-left: 8px;
+    color: #ffffff;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.button-group {
+    margin-top: 20px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #ff4500;
+    border: none;
+    color: #000000;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.register-link {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+.sign-up a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.sign-up a:hover {
+    text-decoration: underline;
+}
+
+.content-spacer {
+    height: 72px;
+}
+.content-spacer2 {
+    height: 13px;
+}
+
+
+.logout-container {
+    display: flex; /* Flexbox to align items horizontally */
+    gap: 10px; /* Space between buttons */
+    margin-left: auto; /* Align container to the right */
+}
+

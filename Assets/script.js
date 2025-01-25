@@ -86,6 +86,9 @@ async function Register () {
 }
 
 function GoToLoginPage() {
+  if (document.querySelector("link[rel='stylesheet'][href='/Assets/post.css']")) {
+    document.querySelector("link[rel='stylesheet'][href='/Assets/post.css']").href =  "/Assets/login.css"
+  }
   document.body.innerHTML = ` 
   
   
@@ -163,7 +166,7 @@ async function GoToHomePage() {
   document.body.innerHTML = ""
 
 
-  let header = await document.createElement('header');
+  let header = document.createElement('header');
   header.classList.add('header');
   header.innerHTML = `
       <div class="header-content">
@@ -177,6 +180,12 @@ async function GoToHomePage() {
                   <i class="fas fa-sign-out-alt"></i> Logout
               </button>
           </div>
+          <div class="button-wrapper">
+                  <button type="submit">
+                      <i class="fas fa-plus-circle"></i> Create Post
+                  </button>
+              </div>
+          </div>
       </div>
   `
 
@@ -187,11 +196,6 @@ async function GoToHomePage() {
 
         </aside>
       <main class="posts-container">
-              <div class="button-wrapper">
-                  <button type="submit">
-                      <i class="fas fa-plus-circle"></i> Create Post
-                  </button>
-              </div>
           <h1>Posts</h1>
           <ul>
           </ul>
@@ -209,9 +213,10 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
 
  })
 
-    
-    document.querySelector("link[rel='stylesheet']").href =  "/Assets/post.css"
-   await fetch("/post") .then((response) => response.json()).then((e) => {
+ if (document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']")) {
+  document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']").href =  "/Assets/post.css"
+}
+   await fetch("/post") .then((response) => response.json()).then( (e) => {
       if (e) {
       let ul = document.querySelector('ul')
       e.forEach((data)=> {
@@ -235,7 +240,7 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
                             <i class="fas fa-thumbs-down"></i>
                             ${data.dislikes}
                         </button>
-                            <button class="show-all-comments" name="id-post">Show all
+                            <button class="show-all-comments" value="${data.id}" name="id-post">Show all
                                 Comment</button>
                     </div>
 
@@ -247,6 +252,43 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
       })
     }
     })
+    let showAllComments = document.querySelectorAll(`.show-all-comments`)
+    showAllComments.forEach(e => e.addEventListener("click", async (e) => {
+      let id = e.target.value;
+      console.log(id);
+      let post = await fetch(`/api/post/${id}`).then(response => response.json())
+      console.log(post);
+      
+      if (post) {
+        document.querySelector("main > ul").innerHTML = `<li class="post-item" data-post-id="${post.id}">
+                    <div class="username">${post.user_id}</div>
+                    <h3>${post.title}</h3>
+                    <div class="category">Category: ${post.categories }</div>
+                    <p class="content-preview">${post.content }</p>
+                    
+                    <div class="post-date">${post.date }</div>
+
+                    <!-- <div class="interaction-section"> -->
+                    <div class="interaction-section">
+                        <button class="like-comment-btn" name="like_post" value="${post.id}" id="likes"
+                            onclick="">
+                            <i class="fas fa-thumbs-up"></i>
+                            ${post.likes }
+                        </button>
+                        <button class="dislike-comment-btn" name="deslike_post" value="${post.id}" id="likes"
+                            onclick="">
+                            <i class="fas fa-thumbs-down"></i>
+                            ${post.dislikes}
+                        </button>
+                        <input type="text" name="comment" placeholder="Add a comment..." required>
+                        <button type="submit" value="${post.id}" name="id-post">
+                            <i class="fas fa-comment">add</i>
+                        </button>
+                </li>`
+      }
+    }))
+    
+
  function loop() {
       let users = document.querySelectorAll("button.users")
       
@@ -325,8 +367,11 @@ async  function  startchat() {
 
   ws.onmessage = (message) => {
   const parsedMessage = JSON.parse(message.data);
-  const chatBox = document.getElementById('chatBox');
-  chatBox.innerHTML += `<p>${parsedMessage.Sender}: ${parsedMessage.Message}</p>`;
-    };
-};
-
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
+            <div class="message_to">
+              <p>${parsedMessage.Message}</p>
+            </div>
+            <h6>${parsedMessage.Date}</h6></br>`;
+      };
+}
