@@ -201,6 +201,54 @@ async function GoToHomePage() {
           </ul>
       </main>
   `;
+
+  document.querySelector('.button-wrapper > button').addEventListener('click', (e) => {
+     document.body.innerHTML += ` <div class="content-spacer-create"></div>
+    <p class="errorMessage">{{.}}</p>
+
+    <div class="create-post-container">
+    <button class="X">X</button>
+        <h2>Create Post</h2>
+    
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" maxlength="50" minlength="10" required>
+        </div>
+        <div>
+            <label for="content">Content:</label>
+            <textarea id="content" name="content" maxlength="500" minlength="10" required></textarea>
+        </div>
+            <div>
+                <label>Select Categories:</label>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="news" name="category" value="news">
+                    <label for="news" class="checkbox-label">News</label>
+
+                    <input type="checkbox" id="tech" name="category" value="tech">
+                    <label for="tech" class="checkbox-label">Technology</label>
+
+                    <input type="checkbox" id="lifestyle" name="category" value="lifestyle">
+                    <label for="lifestyle" class="checkbox-label">Lifestyle</label>
+
+                    <input type="checkbox" id="education" name="category" value="education">
+                    <label for="education" class="checkbox-label">Education</label>
+
+                    <input type="checkbox" id="health" name="category" value="health">
+                    <label for="health" class="checkbox-label">Health</label>
+
+                    <input type="checkbox" id="entertainment" name="category" value="entertainment">
+                    <label for="entertainment" class="checkbox-label">Entertainment</label>
+                </div>
+            </div>
+            <button type="submit" id="create-post-button">Create Post</button>
+    </form>
+    </div>`
+    document.body.style.overflow = "hidden";
+    document.querySelector(".X").addEventListener("click", () => {
+      GoToHomePage()
+      document.body.style.overflow = "auto";
+    })
+  })
  
 await fetch("/contact").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
