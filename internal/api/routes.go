@@ -30,7 +30,8 @@ func Routes(db *sql.DB) *http.ServeMux {
 	reactionRateLimiter := ratelimiter.ReactionsLimiter.RateMiddleware(http.HandlerFunc(d.ReactionHandler), 10, 500*time.Millisecond, db)
 	mux.Handle("/api/reaction", reactionRateLimiter)
 	mux.HandleFunc("/chat", d.ChatService)
-	mux.HandleFunc("/Lastconversation/", d.Lastconversation)
+	mux.HandleFunc("/ChatWithConversations/", d.Lastconversation)
+	mux.HandleFunc("/Conversations/", d.Conversations)
 
 	go func() {
 		for {

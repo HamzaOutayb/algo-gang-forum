@@ -125,7 +125,9 @@ func broadcast(conns map[string]*websocket.Conn, data any) {
 
 func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+		utils.WriteJson(w, http.StatusBadRequest, struct {
+			Error string `json:"error"`
+		}{Error: "bad request"})
 		return
 	}
 
@@ -145,6 +147,45 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	chat, err := H.Service.GetLastconversations(page, usrid)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			utils.WriteJson(w, http.StatusOK, []models.Chat{})
+			return
+		case sqlite3.ErrLocked:
+			utils.WriteJson(w, http.StatusLocked, struct {
+				Error string `json:"error"`
+			}{Error: "Database Locked"})
+			return			
+		}
+	}
+	utils.WriteJson(w, http.StatusOK, chat)
+}
+
+func (H *Handler) Conversations(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.WriteJson(w, http.StatusBadRequest, struct {
+			Error string `json:"error"`
+		}{Error: "bad request"})
+		return
+	}
+
+	cookie, err := r.Cookie("Session_token")
+	usrid := 0
+	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
+		usrid, _ = H.Service.Database.GetUser(cookie.Value)
+	} else {
+		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized user")
+		return
+	}
+	pagenm := r.URL.Query().Get("Page-num")
+	page, err := strconv.Atoi(pagenm)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+		return
+	}
+	
+	chat, err := H.Service.Getconversations(page, usrid)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

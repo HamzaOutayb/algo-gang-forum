@@ -19,18 +19,19 @@ func (Database *Database) InsertChat(From, To int, Message []byte) error {
 	}
 	return nil
 }
-
-func (Database *Database) GetChatAndUserID(pagenm int, usrid int) ([]models.Chat, error) {
+const pagesize = 10; 
+func (Database *Database) GetChatWith(pagenm int, usrid int) ([]models.Chat, error) {
+	start := pagenm*pagesize
 	rows, err := Database.Db.Query(`
 	SELECT DISTINCT
-  chat_id,
+  id,
   CASE 
     WHEN user_one = ${1} THEN user_two
     ELSE user_one
   END AS chatted_user
 FROM chats
-WHERE ${1} IN (user_one, user_two);
-`, usrid)
+WHERE ${1} IN (user_one, user_two) OFFSET ${2} LIMIT 15 ORDER BY id;
+`, usrid, start)
 	if err != nil {
 		return []models.Chat{}, err
 	}
@@ -61,4 +62,32 @@ func (Database *Database) GetuserNickname(Friendid string) (string, error) {
 	}
 
 	return Nickname, nil
+}
+
+func (Database *Database) GetChat(pagenm int, usrid int) ([]models.Chat, error) {
+	start := pagenm*pagesize
+	rows, err := Database.Db.Query(`SELECT Nickname
+	FROM user
+	WHERE id NOT IN (SELECT id FROM conversation WHERE user_one = ${1} OR user_two  = ${2}) OFFSET ? ORDERBY id;
+`, usrid, start)
+	if err != nil {
+		return []models.Chat{}, err
+	}
+
+	var Chats []models.Chat
+	for rows.Next() {
+		var chat models.Chat
+		err := rows.Scan(&chat.FriendsId)
+		if err != nil {
+			return []models.Chat{}, err
+		}
+		chat.Nickname, err = Database.GetuserNickname(chat.FriendsId)
+		if err != nil {
+			return []models.Chat{}, err
+		}
+
+		Chats = append(Chats, chat)
+	}
+
+	return Chats, nil
 }
