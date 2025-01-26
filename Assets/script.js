@@ -50,6 +50,7 @@ async function Login (Login_re,key_re) {
       const errorMessage = document.getElementById('errorMessage')
       errorMessage.innerHTML = errorData
     } else {
+      
       GoToHomePage()
     }
   } catch (error) {
@@ -170,23 +171,22 @@ async function GoToHomePage() {
   header.classList.add('header');
   header.innerHTML = `
       <div class="header-content">
-          <h3>ALGO GANG<h3>
+          <h3>ALGO GANG</h3>
           <div class="nav-links">
               <a href="/">Home</a>
               <a href="/about">About</a>
           </div>
+
           <div class="logout-container">
               <button class="logout-button" onclick="deleteCookie()">
                   <i class="fas fa-sign-out-alt"></i> Logout
               </button>
-          </div>
-          <div class="button-wrapper">
-                  <button type="submit">
+               <button type="submit" class="button-wrapper">
                       <i class="fas fa-plus-circle"></i> Create Post
                   </button>
-              </div>
           </div>
-      </div>
+          </div>
+
   `
 
   document.body.appendChild(header)
@@ -202,7 +202,7 @@ async function GoToHomePage() {
       </main>
   `;
 
-  document.querySelector('.button-wrapper > button').addEventListener('click', (e) => {
+  document.querySelector('.button-wrapper').addEventListener('click', (e) => {
      document.body.innerHTML += ` <div class="content-spacer-create"></div>
     <p class="errorMessage">{{.}}</p>
 
@@ -350,7 +350,7 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
        <div class="chat-box" id="chatBox">
        </div>
        <div class="input-area">
-         <input type="text" id="messageInput" class="message-input" placeholder="Type your message...">
+         <input type="text " id="messageInput" class="message-input" placeholder="Type your message...">
          <button class="send-btn">Send</button>
        </div>
      </div>
