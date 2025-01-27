@@ -10,8 +10,8 @@ import (
 
 type BucketToken struct {
 	Tokens     int
-	MaxTokens  int
-	RefillTime time.Duration
+	MaxTokens  int 
+	RefillTime time.Duration 
 	LastRefill time.Time
 	Mu         sync.Mutex
 }
@@ -27,8 +27,8 @@ func NewBucketToken(maxTokens int, refillTime time.Duration) *BucketToken {
 
 func (bt *BucketToken) Allow() bool {
 	now := time.Now()
-	elapsed := now.Sub(bt.LastRefill)
-	tokensToAdd := int(elapsed / bt.RefillTime)
+	elapsed := now.Sub(bt.LastRefill) // 2
+	tokensToAdd := int(elapsed / bt.RefillTime)// 1.5/2 = 0
 
 	if tokensToAdd > 0 {
 		bt.Tokens += tokensToAdd
@@ -37,7 +37,6 @@ func (bt *BucketToken) Allow() bool {
 		}
 		bt.LastRefill = now
 	}
-
 	if bt.Tokens > 0 {
 		bt.Tokens--
 		return true
