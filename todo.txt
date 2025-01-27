@@ -1,0 +1,5 @@
+// brahim
+link posts endpoints with front endpoints
+link posts endpoints with reactions front end endpoint
+link comments endpoint with with front end
+
