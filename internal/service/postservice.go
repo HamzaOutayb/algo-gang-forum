@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"html"
 	"strconv"
 	"strings"
@@ -20,12 +21,14 @@ func (s *Service) CreatePost(post models.Post, uid string) error {
 	var err error
 	post.UserID, err = s.Database.GetUser(uid)
 	if err != nil {
+		fmt.Println("error getting user id", err)
 		return err
 	}
 
 	post.Categories = removeDuplicate(post.Categories)
 	err = CheckPostValidation(post)
 	if err != nil {
+		fmt.Println("error validating post", err)
 		return err
 	}
 
@@ -34,14 +37,17 @@ func (s *Service) CreatePost(post models.Post, uid string) error {
 
 	postId, err := s.Database.InsertPost(post)
 	if err != nil {
+		fmt.Println("error inserting post", err)
 		return err
 	}
 
 	err = s.Database.AddCategoriesToPost(postId, post.Categories)
 	if err != nil {
 		if errDB := s.Database.DeletePost(postId); errDB != nil {
+			fmt.Println("error deleting post", errDB)
 			return errDB
 		}
+		fmt.Println("error adding categories to post", err)
 		return err
 	}
 	return nil
@@ -121,7 +127,6 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 		}
 
 		post.Categories = categories
-
 		posts = append(posts, post)
 	}
 	if err := row.Err(); err != nil {

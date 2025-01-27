@@ -221,23 +221,22 @@ async function GoToHomePage() {
             <div>
                 <label>Select Categories:</label>
                 <div class="checkbox-container">
-                    <input type="checkbox" id="news" name="category" value="news">
-                    <label for="news" class="checkbox-label">News</label>
+                    <input type="checkbox" class="checkbox" class="checkbox" id="javascript" name="category" value="javascript">
+                    <label for="javascript" class="checkbox-label">javascript</label>
 
-                    <input type="checkbox" id="tech" name="category" value="tech">
+                    <input type="checkbox" class="checkbox" id="tech" name="category" value="tech">
                     <label for="tech" class="checkbox-label">Technology</label>
 
-                    <input type="checkbox" id="lifestyle" name="category" value="lifestyle">
-                    <label for="lifestyle" class="checkbox-label">Lifestyle</label>
+                    <input type="checkbox" class="checkbox" id="golang" name="category" value="golang">
+                    <label for="golang" class="checkbox-label">golang</label>
 
-                    <input type="checkbox" id="education" name="category" value="education">
-                    <label for="education" class="checkbox-label">Education</label>
+                    <input type="checkbox" class="checkbox" id="rust" name="category" value="rust">
+                    <label for="rust" class="checkbox-label">rust</label>
 
-                    <input type="checkbox" id="health" name="category" value="health">
-                    <label for="health" class="checkbox-label">Health</label>
+                    <input type="checkbox" class="checkbox" id="programming" name="category" value="programming">
+                    <label for="programming" class="checkbox-label">programming</label>
 
-                    <input type="checkbox" id="entertainment" name="category" value="entertainment">
-                    <label for="entertainment" class="checkbox-label">Entertainment</label>
+                  
                 </div>
             </div>
             <button type="submit" id="create-post-button">Create Post</button>
@@ -248,16 +247,27 @@ async function GoToHomePage() {
       GoToHomePage()
       document.body.style.overflow = "auto";
     })
+    document.querySelector("#create-post-button").addEventListener("click", () => {
+      CreatePost()
+    })
   })
  
 await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
   if (e){
-    console.log(e);
-  /*e.Contact_list.forEach((data)=> {
-    aside.innerHTML += `<button class="users">${data}</button>`
-  })*/
+  e.forEach((data)=> {
+    aside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
+  })
 }
+})
+await fetch("/Conversations/").then(response =>  response.json()).then(e => {
+  let aside = document.querySelector('.sidebar-left')
+   if (e){
+    aside.innerHTML += `<h2>Conversations</h2>`
+  e.forEach((data)=> {
+     aside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
+   })
+ }
 
 
  })
@@ -272,7 +282,7 @@ await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e
           ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">
                     <div class="username">${data.user_id}</div>
                     <h3>${data.title}</h3>
-                    <div class="category">Category: ${data.categories }</div>
+                    <div class="category">Category: ${data.categories?.join(' - ') || "None" }</div>
                     <p class="content-preview">${data.content }</p>
                     
                     <div class="post-date">${data.date }</div>
@@ -305,14 +315,12 @@ await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e
     showAllComments.forEach(e => e.addEventListener("click", async (e) => {
       let id = e.target.value;
       console.log(id);
-      let post = await fetch(`/api/post/${id}`).then(response => response.json())
-      console.log(post);
-      
-      if (post) {
+      let post = await fetch(`/api/post/${id}`).then(response => response.json())      
+      if (post) {        
         document.querySelector("main > ul").innerHTML = `<li class="post-item" data-post-id="${post.id}">
                     <div class="username">${post.user_id}</div>
                     <h3>${post.title}</h3>
-                    <div class="category">Category: ${post.categories }</div>
+                    <div class="category">Category: ${post.Categories}</div>
                     <p class="content-preview">${post.content }</p>
                     
                     <div class="post-date">${post.date }</div>
@@ -427,3 +435,24 @@ async  function  startchat() {
 
 
 
+async function CreatePost() {
+  const title = document.querySelector('#title').value
+  const content = document.querySelector('#content').value
+  const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value)
+  const data = { title: title, content: content, categories: categories }
+  console.log(data)
+  await fetch('/create_post', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+    }).then(response => response.json()).then(data => {
+      if (data) {
+        GoToHomePage()
+        document.body.style.overflow = "auto";
+      }
+    }).catch(e => {
+      console.log(e)
+    })
+}
