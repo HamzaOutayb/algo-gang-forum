@@ -2,4 +2,8 @@
 link posts endpoints with front endpoints
 link posts endpoints with reactions front end endpoint
 link comments endpoint with with front end
+fetch ppl chat with and ppl aint chat with
+// 
 
+
+// active/desactive online or offline 
