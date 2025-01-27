@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -13,13 +14,16 @@ import (
 )
 
 func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("AddCommentHandler")
 	// parse data
 	comment := models.Comment{}
 	err := json.NewDecoder(r.Body).Decode(&comment)
 	if err != nil {
+		fmt.Println("err", err,r.Body)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+	fmt.Println("comment", comment)
 	cookie, err := r.Cookie("session_token")
 	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)

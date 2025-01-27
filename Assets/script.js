@@ -344,6 +344,26 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
                 </li>`
       }
     }))
+
+    let CommentBtn = document.querySelectorAll(`button[type="submit"][name="id-post"]`)
+    CommentBtn.forEach(e => e.addEventListener("click", async (e) => {
+      // let id = e.target.value;
+      const id = e.target.closest('.post-item').getAttribute('data-post-id');
+      const postsinput = document.querySelector(`.post-item[data-post-id="${id}"] input[name="comment"]`);
+      const data = { postId: parseInt(id), content: String(postsinput.value) }
+      console.log(data)
+      await fetch('/comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },  
+        body: JSON.stringify(data)
+      }).catch(e => {
+        console.log(e)
+      })
+      postsinput.value = '';
+    }))
+      
     
 
  function loop() {
