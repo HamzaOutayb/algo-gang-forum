@@ -13,13 +13,19 @@
     display: none;
 }
 
+
 body {
     background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
     display: flex;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
-    height: 100vh;
     font-family: Arial, sans-serif;
+}
+main {
+    margin-top: 6%;
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
 }
 
 
@@ -56,17 +62,6 @@ input {
     margin-top: 20px;
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #071952;
-    border: none;
-    color: #fff;
-    font-size: 16px;
-    border-radius: 30px;
-    cursor: pointer;
-    margin-top: 10px;
-}
 
 button:hover {
     background-color: #0056b3;
@@ -96,3 +91,427 @@ button:hover {
 .content-spacer2 {
     height: 13px;
 }
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.forum-container {
+    display: flex;
+}
+
+/* side bar css ============================> */
+.sidebar-left {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    height: 91vh;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    margin-left: 60px;
+    margin-top: 58px;
+}
+
+.sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sidebar-button7{
+    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
+    border: none;
+    text-align: left;
+    font-size: 16px;
+    font-family: monospace;
+    color: #333;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: color 0.3s, background 0.3s;
+    width: 198pxpx;
+    border-radius: 20px;
+    margin-bottom: 10px; 
+}
+
+.sidebar-button {
+    background: linear-gradient(180deg, #EBF8FF 0%, #F0F9FF 100%);
+    border: none;
+    text-align: left;
+    font-size: 16px;
+    font-family: monospace;
+    color: #333;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: color 0.3s, background 0.3s;
+    width: 186px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.sidebar-button:hover {
+    color: #2563EB;
+    background: #EBF8FF;
+}
+
+.sidebar-button.selected {
+    color: #FFF;
+    background: #525d76;
+}
+
+.sidebar-button7.selected {
+    color: #FFF;
+    background: #525d76; 
+}
+
+.sidebar-button i {
+    font-size: 18px; 
+    color: inherit; 
+    margin-right: 4px;
+}
+
+
+.sidebar-left h2 {
+    color: #2563EB;
+    font-size: 20px;
+    margin-bottom: 1rem;
+}
+
+.posts-container {
+    margin-left: 250px;
+    padding: 20px;
+    flex: 1;
+}
+
+
+.posts-container h1 {
+    color: #2563EB;
+    font-size: 24px;
+    margin-bottom: 1.5rem;
+}
+
+.post-item {
+    background: white;
+    width: 80%;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    margin-left: 25px;
+    list-style: none;
+}
+
+.username {
+    color: #2563EB;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+}
+
+.post-item h3 {
+    font-size: 18px;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.category {
+    color: #6B7280;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+}
+
+.interaction-section {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+
+
+.comment-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    margin-left: 23rem;
+}
+
+.show-all-comments {
+    color: black;
+    margin-left: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+}
+
+.like-comment-btn,
+.dislike-comment-btn {
+    color: black;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.show-all-comments:hover,
+.like-comment-btn:hover,
+.dislike-comment-btn:hover {
+    background-color: #1E4DAA;
+}
+
+.like-comment-btn i,
+.dislike-comment-btn i {
+    font-size: 16px;
+}
+
+
+.like-count,
+.dislike-count {
+    font-size: 14px;
+}
+
+.highlight-like {
+    background-color: black;
+    color: white;
+}
+
+.highlight-dislike {
+    background-color: black;
+    color: white;
+}
+
+
+.comment-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.comment-form input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+}
+
+.comment-form button {
+    background: #2563EB;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.comment-form button i {
+    font-size: 16px;
+}
+
+.comment-form button:hover {
+    background-color: #1D4ED8;
+}
+
+
+
+.post-item p {
+    font-family: math;
+    font-size: 17px;
+    color: #374151;
+    background-color: #F9FAFB;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+/* side bar css ============================> */
+.sidebar-left {
+    left: 0%;
+    top: 12%;
+    width: 10%;
+    transform: translate(-59px,0px);
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-left h2 {
+    color: #333;
+}
+
+.sidebar-left button {
+    padding: 10px 20px;
+    margin-bottom: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.sidebar-left button:hover {
+    background-color: #0056b3;
+}
+
+
+
+.post-date {
+    color: #6B7280;
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+    display: inline-block;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.content-spacer {
+    height: 72px;
+}
+.content-spacer2 {
+    height: 13px;
+}
+
+
+.logout-container {
+    display: flex; 
+    gap: 10px;
+    margin-left: auto; 
+}
+
+
+/* ================================================> */
+
+
+
+
+
+.content-full {
+    display: none;
+}
+
+.more-button {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.more-button:hover {
+    background-color: #1D4ED8;
+}
+
+
+
+.pagination-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pagination-buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 25%;
+    margin-right: 40%;
+}
+
+.pagination-buttons button:hover {
+    background-color: #2980b9;
+}
+
+.pagination-buttons button:active {
+    background-color: #1c6693;
+}
+
+.chat-container {
+    position: fixed;
+    top: 20%;
+    width: 400px;
+    left: 40%;
+    background-color:rgba(95, 80, 80, 0.1);
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    height: 500px;
+  }
+
+  .chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: rgb(123, 121, 145);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 300px;
+  }
+
+  .input-area {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .message-input {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .send-btn {
+    width: 15%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .send-btn:hover {
+    background-color: #45a049;
+  }
+
+  .message_to {
+    margin-bottom: 10px;
+    background-color: #90b4db;
+  }
+  .message_sender {
+    justify-items: end;
+    margin-bottom: 10px;
+    background-color: #1a5faa;
+  }

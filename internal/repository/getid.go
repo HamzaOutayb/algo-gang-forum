@@ -1,8 +1,18 @@
 package repository
 
-func (database *Database) GetId(from, to string) (int, int, error) {
+import (
+	"errors"
+	"fmt"
+)
+
+func (database *Database) GetId(from, to string) (string,string,int, int, error) {
 	From, To := 0, 0
-	_ = database.Db.QueryRow("SELECTE user_id FROM user WHERE Nickname = ?", from).Scan(&From)
-	_ = database.Db.QueryRow("SELECTE user_id FROM user WHERE Nickname = ?", to).Scan(&To)
-	return From, To, nil
+	uid,name := "",""
+	_ = database.Db.QueryRow("SELECT id,Nickname FROM user WHERE uid = ?", from).Scan(&From,&name)
+	_ = database.Db.QueryRow("SELECT  id,uid FROM user WHERE Nickname = ?", to).Scan(&To,&uid)
+	if From == 0 || To == 0 || uid == ""{
+		fmt.Println(From, To,uid)
+		return name,uid,From, To, errors.New("not exist")
+	}
+	return name,uid,From, To, nil
 }

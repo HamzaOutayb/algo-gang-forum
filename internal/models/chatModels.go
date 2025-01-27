@@ -13,7 +13,13 @@ type Messagesbody struct {
 }
 
 type Chat struct {
-	Id string `json:"id"`
-	Nickname string `json:"nickname"`
+	Id        string `json:"id"`
+	Nickname  string `json:"nickname"`
 	FriendsId string `json:"friendid"`
+}
+
+type Conversations struct {
+	Sender     string
+	Content    string
+	Created_at string
 }

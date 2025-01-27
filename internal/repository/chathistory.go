@@ -1,37 +1,30 @@
 package repository
 
-import (
-	"real-time-forum/internal/models"
-)
+import "real-time-forum/internal/models"
 
-func (Database *Database) HistoryMessages(from, to int) ([]models.Messagesbody, error) {
-
+func (Database *Database) HistoryMessages(from, to int) ([]models.Conversations, error) {
 	conversations_id := 0
-
-	Database.Db.QueryRow("SELECTE id FROM conversations WHERE user_one = ? AND user_two = ?", from, to).Scan(conversations_id)
-	rows, err := Database.Db.Query("SELECTE sender_id,content,created_at FROM messages WHERE conversation_id = ?", from, to, conversations_id)
+	var result []models.Conversations
+	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_two = ? AND user_one = ?)", from, to, from, to).Scan(&conversations_id)
+	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ", conversations_id)
 	if err != nil {
-		return []models.Messagesbody{}, err
+		return []models.Conversations{}, err
 	}
-
-	conversations := []models.Messagesbody{}
-	conversation := models.Messagesbody{}
 	for rows.Next() {
 		var sender, message, date string
 		err := rows.Scan(&sender, &message, &date)
 		if err != nil {
 			return nil, err
 		}
-
-		conversation.Sender = sender
-		conversation.Message = message
-		conversation.Date = date
-		conversations = append(conversations, conversation)
+		messages := models.Conversations{
+			Sender:     sender,
+			Content:    message,
+			Created_at: date,
+		}
+		result = append(result, messages)
 	}
-
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-
-	return conversations, nil
+	return result, nil
 }

@@ -25,13 +25,19 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type Message struct {
+	Message string
+}
+
 type Data_send struct {
-	Message         string
-	HistoryMessages []models.Messagesbody
+	Sender  string
+	Message string
+	Date    time.Time
+	To      string
 }
 
 var (
-	conns = make(map[string]*websocket.Conn)
+	conns = make(map[int]*websocket.Conn)
 	mu    = &sync.Mutex{}
 	data  Data_send
 )
@@ -39,16 +45,15 @@ var (
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
+		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
-
-	to := r.URL.Query().Get("to")
+	To := r.URL.Query().Get("to")
 	if user.Value == "" {
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	user_id, to_id, err := H.Service.Database.GetId(user.Value, to)
+	user_name, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, To)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
 			http.Error(w, "data base locked", http.StatusLocked)
@@ -64,47 +69,103 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer func() {
+		fmt.Println(user_name + " disconnected")
 		mu.Lock()
-		fmt.Println(user.Value + " disconnected")
-		delete(conns, user.Value)
+		delete(conns, user_id)
 		mu.Unlock()
 		conn.Close()
 	}()
 
 	mu.Lock()
-	conns[user.Value] = conn
+	conns[user_id] = conn
+	/*data.List_online = append(data.List_online, user_id)
+	datajson, err := json.Marshal(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	var Online_users []string
-	Online_users = append(Online_users, user.Value)
+	if err = conn.WriteMessage(1, datajson); err != nil {
+		log.Println(err)
+		return
+	}*/
+
+	fmt.Println(user_name + " connected")
 	mu.Unlock()
 
-	go broadcast(conns, Online_users)
+	// go broadcast(conns, Online_users)
 
 	fmt.Println(user.Value + " connected")
 	// HistoryMessages := H.Service.GetHistory(user_id, to_id)
 
 	for {
-
-		messageType, Message, err := conns[user.Value].ReadMessage()
+		messageType, Message, err := conns[user_id].ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-
+		mu.Lock()
+		data := Data_send{
+			Sender:  user_name,
+			Message: string(Message),
+			Date:    time.Now(),
+		}
+		datajson, err := json.Marshal(data)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		err = H.Service.Database.InsertChat(user_id, to_id, Message)
 		if err != nil {
-			// err message
+			fmt.Println(err)
 		}
-
-		for k, conn := range conns {
-			if k == to || k == user.Value {
-				fmt.Println(k)
-				if err := conn.WriteMessage(messageType, []byte(user.Value+" : "+string(Message))); err != nil {
+		mu.Unlock()
+		for k, value := range conns {
+			if k == to_id || k == user_id {
+				if err := value.WriteMessage(messageType, datajson); err != nil {
 					log.Println(err)
 					return
 				}
 			}
 		}
+	}
+}
+
+func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
+		return
+	}
+	to := Message{
+		Message: "string",
+	}
+	user, err := r.Cookie("session_token")
+	if err != nil {
+
+		utils.WriteJson(w, 500, "no cookies")
+		return
+	}
+	err = json.NewDecoder(r.Body).Decode(&to)
+	if err != nil {
+		utils.WriteJson(w, 500, "err to")
+		return
+	}
+	_, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
+	if err != nil {
+		utils.WriteJson(w, 500, "err looking for ids")
+		return
+	}
+	HistoryMessages, err := H.Service.Database.HistoryMessages(user_id, to_id)
+	if err != nil {
+		utils.WriteJson(w, 500, "err history")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(HistoryMessages)
+	if err != nil {
+		utils.WriteJson(w, 500, "err send")
+		return
 	}
 }
 
@@ -145,7 +206,7 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
-	
+
 	chat, err := H.Service.GetLastconversations(page, usrid)
 	if err != nil {
 		switch err {
@@ -156,7 +217,7 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 			utils.WriteJson(w, http.StatusLocked, struct {
 				Error string `json:"error"`
 			}{Error: "Database Locked"})
-			return			
+			return
 		}
 	}
 	utils.WriteJson(w, http.StatusOK, chat)
@@ -184,7 +245,7 @@ func (H *Handler) Conversations(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
-	
+
 	chat, err := H.Service.Getconversations(page, usrid)
 	if err != nil {
 		switch err {
@@ -195,7 +256,7 @@ func (H *Handler) Conversations(w http.ResponseWriter, r *http.Request) {
 			utils.WriteJson(w, http.StatusLocked, struct {
 				Error string `json:"error"`
 			}{Error: "Database Locked"})
-			return			
+			return
 		}
 	}
 	utils.WriteJson(w, http.StatusOK, chat)
