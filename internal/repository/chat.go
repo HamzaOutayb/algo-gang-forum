@@ -35,10 +35,10 @@ func (Database *Database) GetChatWith(pagenm int, usrid int) ([]models.Chat, err
     CASE 
         WHEN user_one = ? THEN user_two
         ELSE user_one
-    END AS chatted_user
+    END
 FROM conversations
 WHERE ? IN (user_one, user_two) 
-ORDER BY id;
+ORDER BY created_at;
 `, usrid, usrid)
 	if err != nil {
 		return []models.Chat{}, err
