@@ -1,6 +1,10 @@
 package repository
 
-import "real-time-forum/internal/models"
+import (
+	"fmt"
+
+	"real-time-forum/internal/models"
+)
 
 func (Database *Database) InsertChat(From, To int, Message []byte) error {
 	var Conversations_ID int64
@@ -25,17 +29,17 @@ func (Database *Database) InsertChat(From, To int, Message []byte) error {
 const pagesize = 10
 
 func (Database *Database) GetChatWith(pagenm int, usrid int) ([]models.Chat, error) {
-	start := pagenm * pagesize
 	rows, err := Database.Db.Query(`
-	SELECT DISTINCT
-  id,
-  CASE 
-    WHEN user_one = ${1} THEN user_two
-    ELSE user_one
-  END AS chatted_user
-FROM chats
-WHERE ${1} IN (user_one, user_two) OFFSET ${2} LIMIT 15 ORDER BY id;
-`, usrid, start)
+	SELECT
+    id,
+    CASE 
+        WHEN user_one = ? THEN user_two
+        ELSE user_one
+    END AS chatted_user
+FROM conversations
+WHERE ? IN (user_one, user_two) 
+ORDER BY id;
+`, usrid, usrid)
 	if err != nil {
 		return []models.Chat{}, err
 	}
@@ -69,12 +73,22 @@ func (Database *Database) GetuserNickname(Friendid string) (string, error) {
 }
 
 func (Database *Database) GetChat(pagenm int, usrid int) ([]models.Chat, error) {
-	start := pagenm * pagesize
-	rows, err := Database.Db.Query(`SELECT Nickname
-	FROM user
-	WHERE id NOT IN (SELECT id FROM conversation WHERE user_one = ${1} OR user_two  = ${2}) OFFSET ? ORDERBY id;
-`, usrid, start)
+	// start := pagenm * pagesize
+	rows, err := Database.Db.Query(`SELECT id Nickname
+FROM user
+WHERE id != ?
+AND id NOT IN (
+    SELECT 
+        CASE
+            WHEN c.user_one = ? THEN c.user_two
+            WHEN c.user_two = ? THEN c.user_one
+        END
+    FROM conversations c
+    WHERE ? IN (c.user_one, c.user_two)
+) ORDER BY Nickname;
+`, usrid, usrid, usrid, usrid)
 	if err != nil {
+		fmt.Println("er", err)
 		return []models.Chat{}, err
 	}
 
@@ -89,9 +103,7 @@ func (Database *Database) GetChat(pagenm int, usrid int) ([]models.Chat, error) 
 		if err != nil {
 			return []models.Chat{}, err
 		}
-
 		Chats = append(Chats, chat)
 	}
-
 	return Chats, nil
 }
