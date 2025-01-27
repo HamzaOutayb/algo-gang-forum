@@ -192,7 +192,7 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("Session_token")
+	cookie, err := r.Cookie("session_token")
 	usrid := 0
 	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		usrid, _ = H.Service.Database.GetUser(cookie.Value)
@@ -203,8 +203,7 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 	pagenm := r.URL.Query().Get("Page-num")
 	page, err := strconv.Atoi(pagenm)
 	if err != nil {
-		utils.WriteJson(w, http.StatusBadRequest, "bad request")
-		return
+		page = 0
 	}
 
 	chat, err := H.Service.GetLastconversations(page, usrid)
@@ -231,19 +230,19 @@ func (H *Handler) Conversations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("Session_token")
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized user")
+		return
+	}
 	usrid := 0
 	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		usrid, _ = H.Service.Database.GetUser(cookie.Value)
-	} else {
-		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized user")
-		return
 	}
 	pagenm := r.URL.Query().Get("Page-num")
 	page, err := strconv.Atoi(pagenm)
 	if err != nil {
-		utils.WriteJson(w, http.StatusBadRequest, "bad request")
-		return
+		page = 0
 	}
 
 	chat, err := H.Service.Getconversations(page, usrid)

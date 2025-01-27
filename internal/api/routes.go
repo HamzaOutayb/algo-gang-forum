@@ -20,9 +20,9 @@ func Routes(db *sql.DB) *http.ServeMux {
 	signupRateLimiter := ratelimiter.SignupLimiter.RateMiddlewareAuth(http.HandlerFunc(d.Signup), 5, time.Minute)
 	mux.Handle("/Signin", loginRateLimiter)
 	mux.Handle("/Signup", signupRateLimiter)
-	mux.HandleFunc("/post", d.InsertPostsHandler)
+	mux.HandleFunc("/create_post", d.InsertPostsHandler)
 	mux.HandleFunc("GET /api/post/{id}", d.GetPostByIdHandler)
-	mux.HandleFunc("GET /post", d.GetPostHandler)
+	mux.HandleFunc("GET /api/post", d.GetPostHandler)
 
 	addCommentHandler := ratelimiter.AddCommentsLimter.RateMiddleware(http.HandlerFunc(d.AddCommentHandler), 10, 2*time.Second, db)
 	mux.Handle("/comment", addCommentHandler)

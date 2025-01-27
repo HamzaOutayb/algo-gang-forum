@@ -39,9 +39,9 @@ async function deleteCookie () {
 async function Login (Login_re,key_re) {
   let email =  document.querySelector('input#email')  
   let password = document.querySelector('input#password')
-  let data = { email:  Login_re || email.value, password:  key_re || password.value }  
+  let data = { email:  Login_re?.value || email.value, password:  key_re?.value || password.value }    
   try {
-    let response = await fetch('/signin', {
+    let response = await fetch('/Signin', {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -57,7 +57,8 @@ async function Login (Login_re,key_re) {
     const errorMessage = document.getElementById('errorMessage')
     errorMessage.innerHTML = 'Network error occurred!'
     }
-  }
+}
+
 async function Register () {
   let nickname = document.querySelector('input#nickname')
   let age = document.querySelector('input#age')
@@ -68,7 +69,7 @@ async function Register () {
   let password = document.querySelector('input#password_re')
   let data = { nickname: nickname.value,age: age.value,email: email.value,gender: gender.value,first_Name: first_Name.value, last_Name: last_Name.value, password: password.value }
   try {
-    let response = await fetch('/signup', {
+    let response = await fetch('/Signup', {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -249,12 +250,13 @@ async function GoToHomePage() {
     })
   })
  
-await fetch("/contact").then(response =>  response.json()).then(e => {
+await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
   if (e){
-  e.Contact_list.forEach((data)=> {
+    console.log(e);
+  /*e.Contact_list.forEach((data)=> {
     aside.innerHTML += `<button class="users">${data}</button>`
-  })
+  })*/
 }
 
 
@@ -263,7 +265,7 @@ await fetch("/contact").then(response =>  response.json()).then(e => {
  if (document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']")) {
   document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']").href =  "/Assets/post.css"
 }
-   await fetch("/post") .then((response) => response.json()).then( (e) => {
+   await fetch("/api/post") .then((response) => response.json()).then( (e) => {
       if (e) {
       let ul = document.querySelector('ul')
       e.forEach((data)=> {
@@ -422,3 +424,6 @@ async  function  startchat() {
             <h6>${parsedMessage.Date}</h6></br>`;
       };
 }
+
+
+
