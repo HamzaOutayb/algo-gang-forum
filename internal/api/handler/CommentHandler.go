@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"real-time-forum/internal/models"
@@ -11,6 +13,11 @@ import (
 
 	"github.com/mattn/go-sqlite3"
 )
+
+// CommentsResponse type => type that the GetCommentsHandler will return it
+type CommentsResponse struct {
+	Comments []models.ShowComment
+}
 
 func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -68,4 +75,58 @@ func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJson(w, http.StatusCreated, struct{ Message string }{
 		Message: "Your comment added successfuly",
 	})
+}
+
+func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("yes")
+	// extract post id and comment page number from the path
+	postId, pageNumber, err := extractPostAndPage(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_token")
+	id := 0
+	if err != http.ErrNoCookie {
+		id, _ = h.Service.Database.GetUser(cookie.Value)
+	}
+	// Get Comments
+	comments, err := h.Service.GetComments(postId, pageNumber, id)
+	if err != nil {
+		switch err.Error() {
+		case sqlite3.ErrLocked.Error():
+			http.Error(w, "Database locked", http.StatusLocked)
+			return
+		case models.CommentErrors.InvalidPage:
+			// Send Empty Array of Comments To the user
+			utils.WriteJson(w, http.StatusOK, CommentsResponse{Comments: []models.ShowComment{}})
+			return
+		default:
+			log.Printf("Unexpected Error when we get comment %s", err.Error())
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Send Comments To the user
+	utils.WriteJson(w, http.StatusOK, CommentsResponse{Comments: comments})
+}
+
+// take a path with this form /api/post/2/comment/1
+// where 2 is the post id and 1 is the comment page number
+// and return the post id and the comment page number
+func extractPostAndPage(r *http.Request) (int, int, error) {
+	postid := r.PathValue("postid")
+	postId, err := strconv.Atoi(postid)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	pagenm := r.URL.Query().Get("page")
+	pageNumber, err := strconv.Atoi(pagenm);if err != nil {
+		return 0, 0, err
+	}
+
+	return postId, pageNumber, nil
 }
