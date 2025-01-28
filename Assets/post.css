@@ -6,7 +6,7 @@
 }
 
 body {
-
+    scroll-behavior: smooth;
     background: #151616;
     min-height: 100vh;
 }
@@ -27,6 +27,19 @@ body {
     height: 100%;
     margin-left: 5px;
     margin-top: 65px;
+}
+.listaside {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #414040;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(235, 85, 16, 0.1);
+    margin-bottom: 1rem;
+    height: 40%; /* Relative height */
+    max-height: 40%; /* Maximum height */
+    overflow-y: auto; /* Show scrollbar only when needed */
+    scroll-behavior: smooth
 }
 
 .sidebar-buttons {
@@ -461,4 +474,25 @@ button[type="submit"] {
     margin-top: 20%;
     margin-left: 50%;
     transform: translate(-50%, -50%);
+}
+.buttonaside {
+    position: fixed;
+    z-index: 932165;
+    top: 60px;
+    padding: 10px 20px;
+    background-color: #ff7300;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .posts-container {
+        margin-left: 0;
+    }
+    .sidebar-left {
+        display: none;
+    }
+   
 }
