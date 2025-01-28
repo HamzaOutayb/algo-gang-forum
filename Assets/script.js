@@ -172,10 +172,6 @@ async function GoToHomePage() {
   header.innerHTML = `
       <div class="header-content">
           <h3>ALGO GANG</h3>
-          <div class="nav-links">
-              <a href="/">Home</a>
-              <a href="/about">About</a>
-          </div>
 
           <div class="logout-container">
               <button class="logout-button" onclick="deleteCookie()">
@@ -311,6 +307,7 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
       })
     }
     })
+  Likes_Posts()
     let showAllComments = document.querySelectorAll(`.show-all-comments`)
     showAllComments.forEach(e => e.addEventListener("click", async (e) => {
       let id = e.target.value;
@@ -344,6 +341,26 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
                 </li>`
       }
     }))
+
+    let CommentBtn = document.querySelectorAll(`button[type="submit"][name="id-post"]`)
+    CommentBtn.forEach(e => e.addEventListener("click", async (e) => {
+      // let id = e.target.value;
+      const id = e.target.closest('.post-item').getAttribute('data-post-id');
+      const postsinput = document.querySelector(`.post-item[data-post-id="${id}"] input[name="comment"]`);
+      const data = { postId: parseInt(id), content: String(postsinput.value) }
+      console.log(data)
+      await fetch('/comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },  
+        body: JSON.stringify(data)
+      }).catch(e => {
+        console.log(e)
+      })
+      postsinput.value = '';
+    }))
+      
     
 
  function loop() {
@@ -440,19 +457,66 @@ async function CreatePost() {
   const content = document.querySelector('#content').value
   const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value)
   const data = { title: title, content: content, categories: categories }
-  console.log(data)
   await fetch('/create_post', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(data)
-    }).then(response => response.json()).then(data => {
-      if (data) {
-        GoToHomePage()
-        document.body.style.overflow = "auto";
-      }
     }).catch(e => {
       console.log(e)
+      return
     })
+    GoToHomePage()
+    document.body.style.overflow = "auto";
 }
+
+
+
+
+
+
+
+ function Likes_Posts() {
+  document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+    
+    const id =  await e.target.closest('.post-item').getAttribute('data-post-id');
+    
+    const data = { thread_type: 'post', thread_id: parseInt(id), react: 1 }
+    let response = await fetch('/api/reaction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+      })
+      response = await response.json()
+      console.log(response)
+      const dislikeButton = await e.target.closest('.post-item').querySelector('.dislike-comment-btn')
+      console.log(dislikeButton)
+      dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+      e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+    
+    
+    }))
+    document.querySelectorAll('.dislike-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+     
+      const id = await e.target.closest('.post-item').getAttribute('data-post-id');
+      
+      const data = { thread_type: 'post', thread_id: parseInt(id), react: 2 }
+      let response = await fetch('/api/reaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+        })
+        response = await response.json()
+        
+        const likeButton =  await e.target.closest('.post-item').querySelector('.like-comment-btn')
+        likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+
+      }))
+    }
+  

@@ -1,6 +1,5 @@
 async  function  start() {
       let to = await document.querySelector('#TO').value;
-      
       if (to === '') {
           return;
       }
@@ -10,9 +9,11 @@ async  function  start() {
       const chatBox = document.getElementById('messageInput');
       const button = document.querySelector('send-btn');
       button.addEventListener('click', () => {
+        if (chatBox.value) {
           ws.send(chatBox.value);
           chatBox.value = '';
-      });
+        }  
+        });
 
       ws.onmessage = (message) => {
       const parsedMessage = JSON.parse(message.data);
