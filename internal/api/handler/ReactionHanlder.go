@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -16,13 +17,17 @@ func (H *Handler) ReactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	react := models.React{}
-	json.NewDecoder(r.Body).Decode(&react)
+	err := json.NewDecoder(r.Body).Decode(&react)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 	cookie, err := r.Cookie("session_token")
 	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
+fmt.Println("ReactionHandler", react)
 	id, err := H.Service.Database.GetUser(cookie.Value)
 	if err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")

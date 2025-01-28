@@ -25,11 +25,11 @@ func Routes(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("GET /api/post", d.GetPostHandler)
 	mux.HandleFunc("POST /api/chathistory", d.GetHistoryHandler)
 
-	//addCommentHandler := ratelimiter.AddCommentsLimter.RateMiddleware(http.HandlerFunc(d.AddCommentHandler), 10, 2*time.Second, db)
-	mux.HandleFunc("/comment", d.AddCommentHandler)
+	addCommentHandler := ratelimiter.AddCommentsLimter.RateMiddleware(http.HandlerFunc(d.AddCommentHandler), 10, 2*time.Second, db)
+	mux.Handle("/comment", addCommentHandler)
 
-	reactionRateLimiter := ratelimiter.ReactionsLimiter.RateMiddleware(http.HandlerFunc(d.ReactionHandler), 10, 500*time.Millisecond, db)
-	mux.Handle("/api/reaction", reactionRateLimiter)
+	//reactionRateLimiter := ratelimiter.ReactionsLimiter.RateMiddleware(http.HandlerFunc(d.ReactionHandler), 10, 500*time.Millisecond, db)
+	mux.HandleFunc("/api/reaction", d.ReactionHandler)
 	mux.HandleFunc("/chat", d.ChatService)
 	mux.HandleFunc("/ChatWithConversations/", d.Lastconversation)
 	mux.HandleFunc("/Conversations/", d.Conversations)
