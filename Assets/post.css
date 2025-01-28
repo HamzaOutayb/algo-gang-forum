@@ -401,16 +401,17 @@ button[type="submit"] {
 /* creat post */
 
 .content-spacer-create {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    z-index: 4999;
 }
 .create-post-container {
-
-    position: absolute;
+   
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -421,6 +422,7 @@ button[type="submit"] {
     max-width: 400px;
     width: 100%;
     height: 500px;
+    z-index: 5000;
 }
 
 .create-post-container textarea {

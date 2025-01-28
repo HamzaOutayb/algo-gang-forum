@@ -238,6 +238,7 @@ async function GoToHomePage() {
             <button type="submit" id="create-post-button">Create Post</button>
     </form>
     </div>`
+    
     document.body.style.overflow = "hidden";
     document.querySelector(".X").addEventListener("click", () => {
       GoToHomePage()
