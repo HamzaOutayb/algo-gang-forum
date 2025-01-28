@@ -6,28 +6,6 @@ import (
 	"real-time-forum/internal/models"
 )
 
-func (Database *Database) InsertChat(From, To int, Message []byte) error {
-	var Conversations_ID int64
-	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
-	if Conversations_ID == 0 {
-		Insertchat, err := Database.Db.Exec("INSERT INTO conversations (user_one, user_two) VALUES (?, ?)", From, To)
-		if err != nil {
-			return err
-		}
-		Conversations_ID, err = Insertchat.LastInsertId()
-		if err != nil {
-			return err
-		}
-	}
-	_, err := Database.Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-const pagesize = 10
-
 func (Database *Database) GetChatWith(pagenm int, usrid int) ([]models.Chat, error) {
 	rows, err := Database.Db.Query(`
 	SELECT
@@ -106,4 +84,31 @@ AND id NOT IN (
 		Chats = append(Chats, chat)
 	}
 	return Chats, nil
+}
+
+func (Database *Database) HistoryMessages(from, to int) ([]models.Conversations, error) {
+	conversations_id := 0
+	var result []models.Conversations
+	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_two = ? AND user_one = ?)", from, to, from, to).Scan(&conversations_id)
+	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ", conversations_id)
+	if err != nil {
+		return []models.Conversations{}, err
+	}
+	for rows.Next() {
+		var sender, message, date string
+		err := rows.Scan(&sender, &message, &date)
+		if err != nil {
+			return nil, err
+		}
+		messages := models.Conversations{
+			Sender:     sender,
+			Content:    message,
+			Created_at: date,
+		}
+		result = append(result, messages)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

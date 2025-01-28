@@ -37,29 +37,37 @@ type Data_send struct {
 }
 
 var (
-	conns = make(map[int]*websocket.Conn)
-	mu    = &sync.Mutex{}
-	data  Data_send
+	conns   = make(map[int]*websocket.Conn)
+	counter = make(map[int]int)
+	mu      = &sync.Mutex{}
 )
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session_token")
 	if err != nil {
-		utils.WriteJson(w, 500, "no cookies")
+		utils.WriteJson(w, http.StatusUnauthorized, "unothorized")
 		return
 	}
-	To := r.URL.Query().Get("to")
+	receiver := r.URL.Query().Get("to")
 	if user.Value == "" {
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	user_name, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, To)
+
+	user_name, _, user_id, receiver_id, err := H.Service.Database.GetId(user.Value, receiver)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
 			http.Error(w, "data base locked", http.StatusLocked)
+			return
 		}
-		// err bad request theres no sender or no receiver
-		// err db is locked
+		if err == sql.ErrNoRows {
+			utils.WriteJson(w, http.StatusBadRequest, "bad request")
+			return
+		}
+		if err == sqlite3.ErrLocked {
+			utils.WriteJson(w, http.StatusLocked, "data base locked")
+			return
+		}
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -71,57 +79,53 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		fmt.Println(user_name + " disconnected")
 		mu.Lock()
-		delete(conns, user_id)
+		counter[user_id]--
+		if counter[user_id] == 0 {
+			// update and handle user status: online or offline
+			delete(conns, user_id)
+		}
 		mu.Unlock()
 		conn.Close()
 	}()
 
 	mu.Lock()
 	conns[user_id] = conn
-	/*data.List_online = append(data.List_online, user_id)
-	datajson, err := json.Marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	if err = conn.WriteMessage(1, datajson); err != nil {
-		log.Println(err)
-		return
-	}*/
-
+	counter[user_id]++
 	fmt.Println(user_name + " connected")
 	mu.Unlock()
 
-	// go broadcast(conns, Online_users)
+	go readloop(user_name, user_id, receiver_id, H.Service.Database.Db)
+}
 
-	fmt.Println(user.Value + " connected")
-	// HistoryMessages := H.Service.GetHistory(user_id, to_id)
-
+func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
+	conn := conns[userid]
 	for {
-		messageType, Message, err := conns[user_id].ReadMessage()
+		messageType, Message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		mu.Lock()
 		data := Data_send{
-			Sender:  user_name,
+			Sender:  sendername,
 			Message: string(Message),
 			Date:    time.Now(),
 		}
+
 		datajson, err := json.Marshal(data)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		err = H.Service.Database.InsertChat(user_id, to_id, Message)
+
+		err = InsertChat(userid, receiverid, Message, db)
 		if err != nil {
 			fmt.Println(err)
 		}
+
 		mu.Unlock()
 		for k, value := range conns {
-			if k == to_id || k == user_id {
+			if k == receiverid || k == userid {
 				if err := value.WriteMessage(messageType, datajson); err != nil {
 					log.Println(err)
 					return
@@ -131,57 +135,63 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+func InsertChat(From, To int, Message []byte,Db *sql.DB) error {
+	var Conversations_ID int64
+	Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
+	if Conversations_ID == 0 {
+		Insertchat, err := Db.Exec("INSERT INTO conversations (user_one, user_two) VALUES (?, ?)", From, To)
+		if err != nil {
+			return err
+		}
+		Conversations_ID, err = Insertchat.LastInsertId()
+		if err != nil {
+			return err
+		}
+	}
+	_, err := Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (H *Handler) GethistoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
 		return
 	}
 	to := Message{
 		Message: "string",
 	}
-	user, err := r.Cookie("session_token")
-	if err != nil {
-
-		utils.WriteJson(w, 500, "no cookies")
+	user, err := r.Cookie("session_token");if err != nil {
+		utils.WriteJson(w, 500, "unothorized")
 		return
 	}
 	err = json.NewDecoder(r.Body).Decode(&to)
 	if err != nil {
-		utils.WriteJson(w, 500, "err to")
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
 	_, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
 	if err != nil {
-		utils.WriteJson(w, 500, "err looking for ids")
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
 	HistoryMessages, err := H.Service.Database.HistoryMessages(user_id, to_id)
 	if err != nil {
-		utils.WriteJson(w, 500, "err history")
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(HistoryMessages)
-	if err != nil {
-		utils.WriteJson(w, 500, "err send")
-		return
-	}
-}
-
-func broadcast(conns map[string]*websocket.Conn, data any) {
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	for _, conn := range conns {
-		if err = conn.WriteMessage(1, jsonData); err != nil {
-			log.Println(err)
+		if err == sql.ErrNoRows {
+			utils.WriteJson(w, http.StatusBadRequest, "bad request")
 			return
 		}
+		if err == sqlite3.ErrLocked {
+			utils.WriteJson(w, http.StatusLocked, "bad request")
+			return
+		}
+		utils.WriteJson(w, http.StatusInternalServerError, "internal server err")
+			return
 	}
+
+	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 
 func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
