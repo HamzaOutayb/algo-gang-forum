@@ -13,6 +13,10 @@ import (
 )
 
 func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.WriteJson(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
 	// parse data
 	comment := models.Comment{}
 	err := json.NewDecoder(r.Body).Decode(&comment)

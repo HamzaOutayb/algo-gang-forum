@@ -118,7 +118,7 @@ func (rl *RateLimiter) RemoveSleepUsers() {
 
 func (rl *RateLimiter) GetUserID(userUID string, db *sql.DB) (int, error) {
 	var userID int
-	err := db.QueryRow("SELECT id FROM user_profile WHERE uid = ?", userUID).Scan(&userID)
+	err := db.QueryRow("SELECT id FROM user WHERE uid = ?", userUID).Scan(&userID)
 	if err != nil {
 		return 0, err
 	}
