@@ -34,6 +34,7 @@ type Data_send struct {
 	Message string
 	Date    time.Time
 	To      string
+	Type    string
 }
 
 var (
@@ -81,7 +82,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		counter[user_id]--
 		if counter[user_id] == 0 {
-			// update and handle user status: online or offline
+			HandleUserStatus(user_id, "offline")
 			delete(conns, user_id)
 		}
 		mu.Unlock()
@@ -90,6 +91,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 	mu.Lock()
 	conns[user_id] = conn
+	HandleUserStatus(user_id, "online")
 	counter[user_id]++
 	fmt.Println(user_name + " connected")
 	mu.Unlock()
@@ -97,51 +99,71 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	go readloop(user_name, user_id, receiver_id, H.Service.Database.Db)
 }
 
-func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
-	conn := conns[userid]
-	for {
-		messageType, Message, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		mu.Lock()
-		data := Data_send{
-			Sender:  sendername,
-			Message: string(Message),
-			Date:    time.Now(),
-		}
-
-		datajson, err := json.Marshal(data)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		err = InsertChat(userid, receiverid, Message, db)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		mu.Unlock()
-		// message
-
-		// status
-
-		// typing
-
-		for k, value := range conns {
-			if k == receiverid || k == userid {
-				if err := value.WriteMessage(messageType, datajson); err != nil {
-					log.Println(err)
-					return
-				}
-			}
+func HandleUserStatus(userid int, status string) {
+	
+	for id, Conn := range conns {
+		if id != userid {
+			Conn.WriteJSON([]byte(status))
 		}
 	}
 }
 
-func InsertChat(From, To int, Message []byte, Db *sql.DB) error {
+func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
+	conn := conns[userid]
+	for {
+		var data Data_send
+		err := conn.ReadJSON(&data)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		mu.Lock()
+		data.Sender = sendername
+		data.Date = time.Now()
+
+		mu.Unlock()
+
+		switch data.Type {
+		// message
+		case "message":
+			Handlemessages(data, userid, receiverid, db)
+			/*/ typing
+			handleTyping(userid, receiverid)
+			*/
+		}
+	}
+}
+
+func Handlemessages(data Data_send, userid int, receiverid int, Db *sql.DB) {
+	datajson, err := json.Marshal(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	err = InsertChat(userid, receiverid, data.Message, Db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	mu.Unlock()
+	if receiverConn, ok := conns[receiverid]; ok {
+		err := receiverConn.WriteJSON(datajson)
+		if err != nil {
+			fmt.Println("err sending message to ", receiverid)
+			return
+		}
+		err = conns[userid].WriteJSON(datajson)
+		if err != nil {
+			fmt.Println("err sending message to ", userid)
+			return
+		}
+	}
+}
+
+func InsertChat(From, To int, Message string, Db *sql.DB) error {
 	var Conversations_ID int64
 	err := Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
 	if err != nil {
@@ -162,7 +184,7 @@ func InsertChat(From, To int, Message []byte, Db *sql.DB) error {
 			return err
 		}
 	}
-	_, err = Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
+	_, err = Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, Message, Conversations_ID)
 	if err != nil {
 		return err
 	}
