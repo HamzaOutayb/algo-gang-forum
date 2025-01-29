@@ -25,6 +25,7 @@ func NewBucketToken(maxTokens int, refillTime time.Duration) *BucketToken {
 	}
 }
 
+
 func (bt *BucketToken) Allow() bool {
 	now := time.Now()
 	elapsed := now.Sub(bt.LastRefill) // 2
@@ -73,6 +74,7 @@ func (rl *RateLimiter) RateMiddlewareAuth(next http.Handler, maxTokens int, dura
 		next.ServeHTTP(w, r)
 	})
 }
+
 
 func (rl *RateLimiter) RateMiddleware(next http.Handler, maxTokens int, duration time.Duration, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

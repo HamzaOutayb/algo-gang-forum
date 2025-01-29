@@ -98,7 +98,7 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		case models.CommentErrors.InvalidPage:
 			// Send Empty Array of Comments To the user
-			utils.WriteJson(w, http.StatusOK, CommentsResponse{Comments: []models.ShowComment{}})
+			utils.WriteJson(w, http.StatusOK, comments)
 			return
 		default:
 			log.Printf("Unexpected Error when we get comment %s", err.Error())
@@ -108,12 +108,9 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send Comments To the user
-	utils.WriteJson(w, http.StatusOK, CommentsResponse{Comments: comments})
+	utils.WriteJson(w, http.StatusOK, comments)
 }
 
-// take a path with this form /api/post/2/&page=/1
-// where 2 is the post id and 1 is the comment page number
-// and return the post id and the comment page number
 func extractPostAndPage(r *http.Request) (int, int, error) {
 	postid := r.PathValue("postid")
 	postId, err := strconv.Atoi(postid)

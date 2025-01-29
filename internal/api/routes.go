@@ -26,8 +26,7 @@ func Routes(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("GET /api/chathistory", d.GethistoryHandler)
 
 	addCommentHandler := ratelimiter.AddCommentsLimter.RateMiddleware(http.HandlerFunc(d.AddCommentHandler), 10, 2*time.Second, db)
-	mux.Handle("/Comment", addCommentHandler)
-
+	mux.Handle("/comment", addCommentHandler)
 	mux.HandleFunc("/api/GetComments/{postid}/", d.GetCommentsHandler)
 
 	reactionRateLimiter := ratelimiter.ReactionsLimiter.RateMiddleware(http.HandlerFunc(d.ReactionHandler), 10, 500*time.Millisecond, db)

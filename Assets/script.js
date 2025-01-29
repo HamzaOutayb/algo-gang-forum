@@ -171,7 +171,7 @@ async function GoToHomePage() {
   header.classList.add('header');
   header.innerHTML = `
       <div class="header-content">
-          <h3>ALGO GANG</h3>
+          <h3 class="logo">ALGO GANG</h3>
 
           <div class="logout-container">
               <button class="logout-button" onclick="deleteCookie()">
@@ -186,10 +186,10 @@ async function GoToHomePage() {
   `
 
   document.body.appendChild(header)
+
   document.body.innerHTML +=  `
    <aside class="sidebar-left">
-           <h2>Contact<h2><br>
-
+           <h2>Contact</h2>
         </aside>
       <main class="posts-container">
           <h1>Posts</h1>
@@ -238,6 +238,7 @@ async function GoToHomePage() {
             <button type="submit" id="create-post-button">Create Post</button>
     </form>
     </div>`
+    
     document.body.style.overflow = "hidden";
     document.querySelector(".X").addEventListener("click", () => {
       GoToHomePage()
@@ -251,18 +252,24 @@ async function GoToHomePage() {
 await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {
  let aside = document.querySelector('.sidebar-left')
   if (e){
+    let listaside = document.createElement('div')
+    listaside.classList.add('listaside')
   e.forEach((data)=> {
-    aside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
+    listaside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
   })
+  aside.appendChild(listaside)
 }
 })
 await fetch("/Conversations/").then(response =>  response.json()).then(e => {
   let aside = document.querySelector('.sidebar-left')
    if (e){
     aside.innerHTML += `<h2>Conversations</h2>`
+    let listaside = document.createElement('div')
+    listaside.classList.add('listaside')
   e.forEach((data)=> {
-     aside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
+    listaside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
    })
+   aside.appendChild(listaside)
  }
 
 
@@ -271,15 +278,15 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
  if (document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']")) {
   document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']").href =  "/Assets/post.css"
 }
-   await fetch("/api/post") .then((response) => response.json()).then( (e) => {
+   await fetch("/api/post") .then((response) => response.json()).then( async (e) => {
       if (e) {
       let ul = document.querySelector('ul')
-      e.forEach((data)=> {
+      await e.forEach((data)=> {
           ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">
                     <div class="username">${data.user_id}</div>
                     <h3>${data.title}</h3>
                     <div class="category">Category: ${data.categories?.join(' - ') || "None" }</div>
-                    <p class="content-preview">${data.content }</p>
+                    <p class="content-preview">${data.content}</p>
                     
                     <div class="post-date">${data.date }</div>
 
@@ -294,9 +301,7 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
                             onclick="">
                             <i class="fas fa-thumbs-down"></i>
                             ${data.dislikes}
-                        </button>
-                            <button class="show-all-comments" value="${data.id}" name="id-post">Show all
-                                Comment</button>
+                  
                     </div>
 
                         <input type="text" name="comment" placeholder="Add a comment..." required>
@@ -308,10 +313,11 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
     }
     })
   Likes_Posts()
-    let showAllComments = document.querySelectorAll(`.show-all-comments`)
+  document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
+    let showAllComments = document.querySelectorAll(`.post-item`)
     showAllComments.forEach(e => e.addEventListener("click", async (e) => {
-      let id = e.target.value;
-      console.log(id);
+      let id = await e.target.getAttribute("data-post-id");
+     if (id) {
       let post = await fetch(`/api/post/${id}`).then(response => response.json())      
       if (post) {        
         document.querySelector("main > ul").innerHTML = `<li class="post-item" data-post-id="${post.id}">
@@ -340,7 +346,30 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
                         </button>
                 </li>`
       }
+      let Comment = await fetch(`/api/GetComments/${id}/?page=1`).then(response => response.json())      
+      if (Comment) { 
+        const commentList = document.querySelector("main > ul")
+        console.log(Comment);
+        
+        Comment.forEach((comment) => { 
+          commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
+                    <div class="username">${comment.author}</div>
+                    <p class="content-preview">${comment.content }</p>
+                    <div class="post-date">${comment.date }</div>
+                    <div class="interaction-section">
+                        <button class="like-comment-btn ${comment.isliked ? "isliked" : ""}" name="like_post"  value="${comment.id}" id="likes">
+                            <i class="fas fa-thumbs-up"></i>
+                            ${comment.likes }
+                        </button>
+                        <button class="dislike-comment-btn ${comment.isdisliked ? "isdisliked" : ""}" name="deslike_post" value="${comment.id}" id="likes">
+                            <i class="fas fa-thumbs-down"></i>
+                            ${comment.dislikes}
+                        </button>
+                </li>`})       
+      }
+    }
     }))
+  
 
     let CommentBtn = document.querySelectorAll(`button[type="submit"][name="id-post"]`)
     CommentBtn.forEach(e => e.addEventListener("click", async (e) => {
@@ -519,4 +548,43 @@ async function CreatePost() {
 
       }))
     }
-  
+    let is = false;
+    let done = false;
+    const width = window.innerWidth;
+    if (width < 768) {
+      console.log('width', width);
+      
+    Resize();
+    }
+    
+    window.addEventListener('resize', Resize);
+
+    function Resize() {
+       const width = window.innerWidth;
+      
+        if (width < 768) {
+          if (!done) {
+            done = true;
+            const buttonaside = document.createElement('button');
+            buttonaside.classList.add('buttonaside');
+            document.body.appendChild(buttonaside);
+      
+         
+            buttonaside.addEventListener('click', () => {
+              if (is) {
+                console.log('is0', is);
+                document.querySelector('.sidebar-left').style.display = 'none';
+              } else {
+                console.log('is1', is);
+                document.querySelector('.sidebar-left').style.display = 'block';
+              }
+              is = !is; 
+            });
+          }
+        } else {
+          done = false;
+          is = false; 
+          document.querySelector('.buttonaside')?.remove();
+          document.querySelector('.sidebar-left').style.display = 'block'; 
+        }
+      }
