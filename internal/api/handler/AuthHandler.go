@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"real-time-forum/internal/models"
@@ -29,28 +30,29 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		}
 		// Email
 		if err.Error() == models.Errors.InvalidEmail {
-			http.Error(w, models.Errors.InvalidEmail, http.StatusBadRequest)
+			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidEmail)
 			return
 		}
 		if err.Error() == models.Errors.LongEmail {
-			http.Error(w, models.Errors.LongEmail, http.StatusBadRequest)
+			utils.WriteJson(w, http.StatusBadRequest, models.Errors.LongEmail)
 			return
 		}
 
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
-
-			http.Error(w, models.Errors.InvalidPassword, http.StatusBadRequest)
+			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidPassword)
 			return
 		}
 		// General: User Doesn't Exist
 		if err.Error() == models.Errors.InvalidCredentials {
-			http.Error(w, models.Errors.InvalidCredentials, http.StatusUnauthorized)
+			fmt.Println("1", err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidCredentials)
 			return
 		}
 
 		if err == sql.ErrNoRows {
-			http.Error(w, models.Errors.InvalidCredentials, http.StatusUnauthorized)
+			fmt.Println("2", err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidCredentials)
 			return
 		}
 
@@ -77,40 +79,45 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	err := H.Service.RegisterUser(&user)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
-			http.Error(w, "Database Is Busy!", http.StatusLocked)
+			utils.WriteJson(w, http.StatusLocked, "Database Is Busy!")
 			return
 		}
 		// Username
 		if err.Error() == models.Errors.InvalidUsername {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+
 			return
 		}
 
 		// Age
 		if err.Error() == models.UserErrors.InvalideAge {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+
+			return
 		}
 
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+
 			return
 		}
 		// Email
 		if err.Error() == models.Errors.InvalidEmail {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+					utils.WriteJson(w, http.StatusBadRequest, err.Error())
+
 			return
 		}
 		if err.Error() == models.Errors.LongEmail {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			utils.WriteJson(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		// General
 		if err.Error() == models.Errors.UserAlreadyExist {
-			http.Error(w, err.Error(), http.StatusConflict)
+			utils.WriteJson(w, http.StatusConflict, models.Errors.UserAlreadyExist)
 			return
 		}
-		http.Error(w, "Error While Registering The User.", http.StatusInternalServerError)
+		utils.WriteJson(w, http.StatusInternalServerError, "Error While Registering The User.")
 		return
 	}
 	utils.WriteJson(w, http.StatusOK, "You'v loged succesfuly")

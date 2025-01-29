@@ -107,3 +107,11 @@ button:hover {
     gap: 10px; /* Space between buttons */
     margin-left: auto; /* Align container to the right */
 }
+
+.errorMessage {
+    color: #ff4500;
+    background-color: darkgray;
+    height: 30px;
+    width: 100%;
+    margin-bottom: 20px;
+}

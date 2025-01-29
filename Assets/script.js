@@ -4,10 +4,12 @@ if (document.cookie) {
 
 function Start(){
   if ( document.querySelector('#register-button')){
-    document.querySelector('#register-button').addEventListener('click', () => {Register()})
+    
+    document.querySelector('#register-button').addEventListener('click', Register)
   }
 if (document.querySelector('#login_button')) {
-  document.querySelector('#login_button').addEventListener('click', () => { Login()})
+ 
+  document.querySelector('#login_button').addEventListener('click', Login)
 }
   if (document.querySelector('#signup_switch_button')) {
   document.querySelector('#signup_switch_button').addEventListener('click', function () {
@@ -15,11 +17,8 @@ if (document.querySelector('#login_button')) {
       document.querySelector('.register-container').style.display = 'flex'
     })
   }
-  if (document
-    .querySelector('#login_switch_button')){
-  document
-    .querySelector('#login_switch_button')
-    .addEventListener('click', function () {
+  if (document.querySelector('#login_switch_button')){
+  document.querySelector('#login_switch_button').addEventListener('click', function () {
       document.querySelector('.register-container').style.display = 'none'
       document.querySelector('.login-container').style.display = 'flex'
     })
@@ -28,38 +27,43 @@ if (document.querySelector('#login_button')) {
 
 
 async function deleteCookie () {
-  await fetch('/logout', {
-    method: 'POST',
-    body: JSON.stringify({ session_token: document.cookie.split('=')[1] })
-  })
+  // await fetch('/logout', {
+  //   method: 'POST',
+  //   body: JSON.stringify({ session_token: document.cookie.split('=')[1] })
+  // })
   document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
   GoToLoginPage()
 }
 
 async function Login (Login_re,key_re) {
+   console.log("test login")
   let email =  document.querySelector('input#email')  
   let password = document.querySelector('input#password')
+  const errorMessage = document.getElementById('errorMessage')
   let data = { email:  Login_re?.value || email.value, password:  key_re?.value || password.value }    
-  try {
+  
     let response = await fetch('/Signin', {
       method: 'POST',
       body: JSON.stringify(data)
     })
     if (!response.ok) {
       const errorData = await response.json()
-      const errorMessage = document.getElementById('errorMessage')
+     
+      errorMessage.classList.add("errorMessage")
       errorMessage.innerHTML = errorData
     } else {
       
       GoToHomePage()
     }
-  } catch (error) {
-    const errorMessage = document.getElementById('errorMessage')
-    errorMessage.innerHTML = 'Network error occurred!'
-    }
+  
+    // errorMessage.classList.add("errorMessage")
+    // errorMessage.innerHTML = 'Network error occurred!'
+    
 }
 
 async function Register () {
+      console.log("test regi");
+
   let nickname = document.querySelector('input#nickname')
   let age = document.querySelector('input#age')
   let gender = document.querySelector('input#gender')
@@ -68,22 +72,20 @@ async function Register () {
   let email = document.querySelector('input#email_re')
   let password = document.querySelector('input#password_re')
   let data = { nickname: nickname.value,age: age.value,email: email.value,gender: gender.value,first_Name: first_Name.value, last_Name: last_Name.value, password: password.value }
-  try {
+  
     let response = await fetch('/Signup', {
       method: 'POST',
       body: JSON.stringify(data)
     })
     if (!response.ok) {
       const errorData = await response.json()
-      const errorMessage = document.getElementById('errorMessage')
+      const errorMessage = document.getElementById('errorMessage2')
+      errorMessage.classList.add("errorMessage")
       errorMessage.innerHTML = errorData
     } else {
       Login(email,password)
     }
-  } catch (error) {
-    const errorMessage = document.getElementById('errorMessage')
-    errorMessage.innerHTML = 'Network error occurred!'
-  }
+  
 }
 
 function GoToLoginPage() {
@@ -283,7 +285,7 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
       let ul = document.querySelector('ul')
       await e.forEach((data)=> {
           ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">
-                    <div class="username">${data.user_id}</div>
+                    <div class="username">${data.author}</div>
                     <h3>${data.title}</h3>
                     <div class="category">Category: ${data.categories?.join(' - ') || "None" }</div>
                     <p class="content-preview">${data.content}</p>
@@ -292,12 +294,12 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
 
                     <!-- <div class="interaction-section"> -->
                     <div class="interaction-section">
-                        <button class="like-comment-btn" name="like_post" value="${data.id}" id="likes"
+                        <button class="like-comment-btn ${data.isliked ? "reacted" : ""}" name="like_post" value="${data.id}" id="likes"
                             onclick="">
                             <i class="fas fa-thumbs-up"></i>
                             ${data.likes }
                         </button>
-                        <button class="dislike-comment-btn" name="deslike_post" value="${data.id}" id="likes"
+                        <button class="dislike-comment-btn ${data.isdisliked ? "reacted" : ""}" name="deslike_post" value="${data.id}" id="likes"
                             onclick="">
                             <i class="fas fa-thumbs-down"></i>
                             ${data.dislikes}
@@ -321,7 +323,7 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
       let post = await fetch(`/api/post/${id}`).then(response => response.json())      
       if (post) {        
         document.querySelector("main > ul").innerHTML = `<li class="post-item" data-post-id="${post.id}">
-                    <div class="username">${post.user_id}</div>
+                    <div class="username">${post.author}</div>
                     <h3>${post.title}</h3>
                     <div class="category">Category: ${post.Categories}</div>
                     <p class="content-preview">${post.content }</p>
@@ -520,11 +522,21 @@ async function CreatePost() {
       body: JSON.stringify(data)
       })
       response = await response.json()
-      console.log(response)
-      const dislikeButton = await e.target.closest('.post-item').querySelector('.dislike-comment-btn')
-      console.log(dislikeButton)
-      dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
-      e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+      const dislikeButton = await e.target.closest('.post-item').querySelector('button.dislike-comment-btn')
+       if (response.isliked){
+          e.target.classList.add("reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }else {
+          e.target.classList.remove("reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }
+        if (response.isdisliked){
+          dislikeButton.classList.add("reacted")
+          dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }else {
+          dislikeButton.classList.remove("reacted")
+          dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }
     
     
     }))
@@ -542,9 +554,21 @@ async function CreatePost() {
         })
         response = await response.json()
         
-        const likeButton =  await e.target.closest('.post-item').querySelector('.like-comment-btn')
-        likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
-        e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        const likeButton =  await e.target.closest('.post-item').querySelector('button.like-comment-btn')
+        if (response.isliked){
+          likeButton.classList.add("reacted")
+          likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }else {
+          likeButton.classList.remove("reacted")
+          likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }
+        if (response.isdisliked){
+          e.target.classList.add("reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }else {
+           e.target.classList.remove("reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }
 
       }))
     }
