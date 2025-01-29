@@ -124,6 +124,12 @@ func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
 		}
 
 		mu.Unlock()
+		// message
+
+		// status
+
+		// typing
+
 		for k, value := range conns {
 			if k == receiverid || k == userid {
 				if err := value.WriteMessage(messageType, datajson); err != nil {
@@ -135,20 +141,28 @@ func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
 	}
 }
 
-func InsertChat(From, To int, Message []byte,Db *sql.DB) error {
+func InsertChat(From, To int, Message []byte, Db *sql.DB) error {
 	var Conversations_ID int64
-	Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
-	if Conversations_ID == 0 {
-		Insertchat, err := Db.Exec("INSERT INTO conversations (user_one, user_two) VALUES (?, ?)", From, To)
-		if err != nil {
-			return err
+	err := Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID);
+	if err != nil {
+		if err == sql.ErrNoRows {
+			Insertchat, err := Db.Exec("INSERT INTO conversations (user_one, user_two, created_at) VALUES (?, ?)", From, To, time.Now())
+			if err != nil {
+				return err
+			}
+
+			Conversations_ID, err = Insertchat.LastInsertId()
+			if err != nil {
+				return err
+			}
 		}
-		Conversations_ID, err = Insertchat.LastInsertId()
+	} else {
+		_, err = Db.Exec("UPDATE INTO conversations (created_at) VALUES (?)", time.Now())
 		if err != nil {
 			return err
 		}
 	}
-	_, err := Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
+	_, err = Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
 	if err != nil {
 		return err
 	}
@@ -163,7 +177,8 @@ func (H *Handler) GethistoryHandler(w http.ResponseWriter, r *http.Request) {
 	to := Message{
 		Message: "string",
 	}
-	user, err := r.Cookie("session_token");if err != nil {
+	user, err := r.Cookie("session_token")
+	if err != nil {
 		utils.WriteJson(w, 500, "unothorized")
 		return
 	}
@@ -188,7 +203,7 @@ func (H *Handler) GethistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		utils.WriteJson(w, http.StatusInternalServerError, "internal server err")
-			return
+		return
 	}
 
 	utils.WriteJson(w, http.StatusOK, HistoryMessages)

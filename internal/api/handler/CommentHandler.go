@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -78,7 +77,6 @@ func (H *Handler) AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("yes")
 	// extract post id and comment page number from the path
 	postId, pageNumber, err := extractPostAndPage(r)
 	if err != nil {
@@ -113,7 +111,7 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJson(w, http.StatusOK, CommentsResponse{Comments: comments})
 }
 
-// take a path with this form /api/post/2/comment/1
+// take a path with this form /api/post/2/&page=/1
 // where 2 is the post id and 1 is the comment page number
 // and return the post id and the comment page number
 func extractPostAndPage(r *http.Request) (int, int, error) {
@@ -124,7 +122,8 @@ func extractPostAndPage(r *http.Request) (int, int, error) {
 	}
 
 	pagenm := r.URL.Query().Get("page")
-	pageNumber, err := strconv.Atoi(pagenm);if err != nil {
+	pageNumber, err := strconv.Atoi(pagenm)
+	if err != nil {
 		return 0, 0, err
 	}
 

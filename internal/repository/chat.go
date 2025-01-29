@@ -51,7 +51,6 @@ func (Database *Database) GetuserNickname(Friendid string) (string, error) {
 }
 
 func (Database *Database) GetChat(pagenm int, usrid int) ([]models.Chat, error) {
-	// start := pagenm * pagesize
 	rows, err := Database.Db.Query(`SELECT id Nickname
 FROM user
 WHERE id != ?
