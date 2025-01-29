@@ -143,7 +143,7 @@ func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
 
 func InsertChat(From, To int, Message []byte, Db *sql.DB) error {
 	var Conversations_ID int64
-	err := Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID);
+	err := Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			Insertchat, err := Db.Exec("INSERT INTO conversations (user_one, user_two, created_at) VALUES (?, ?)", From, To, time.Now())
@@ -233,6 +233,7 @@ func (H *Handler) Lastconversation(w http.ResponseWriter, r *http.Request) {
 
 	chat, err := H.Service.GetLastconversations(page, usrid)
 	if err != nil {
+		fmt.Println("get last conversation", err)
 		switch err {
 		case sql.ErrNoRows:
 			utils.WriteJson(w, http.StatusOK, []models.Chat{})
