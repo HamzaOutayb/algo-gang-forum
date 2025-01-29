@@ -153,24 +153,4 @@ func (s *Service) ValidateInput(comment models.Comment) error {
 	return nil
 }
 
-func (s *Service) AddComment(comment models.Comment) error {
-	// add the userId to the comment
-	userID, _ := s.Database.GetUser(comment.UserUID)
-	comment.UserId = userID
 
-	// check if the post exist using the CheckPostExist
-	if !s.Database.CheckPostExist(comment.PostId) {
-		return errors.New(models.PostErrors.PostNotExist)
-	}
-
-	// Trim the space from the comment content
-	comment.Content = strings.TrimSpace(comment.Content)
-
-	// Fix html
-	comment.Content = html.EscapeString(comment.Content)
-
-	// Add the comment Using InsertComment
-	err := s.Database.InsertComment(comment)
-
-	return err
-}

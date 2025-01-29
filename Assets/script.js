@@ -314,8 +314,6 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
     })
   Likes_Posts()
   document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
-
-
     let showAllComments = document.querySelectorAll(`.post-item`)
     showAllComments.forEach(e => e.addEventListener("click", async (e) => {
       let id = await e.target.getAttribute("data-post-id");
@@ -347,6 +345,27 @@ await fetch("/Conversations/").then(response =>  response.json()).then(e => {
                             <i class="fas fa-comment">add</i>
                         </button>
                 </li>`
+      }
+      let Comment = await fetch(`/api/GetComments/${id}/?page=1`).then(response => response.json())      
+      if (Comment) { 
+        const commentList = document.querySelector("main > ul")
+        console.log(Comment);
+        
+        Comment.forEach((comment) => { 
+          commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
+                    <div class="username">${comment.author}</div>
+                    <p class="content-preview">${comment.content }</p>
+                    <div class="post-date">${comment.date }</div>
+                    <div class="interaction-section">
+                        <button class="like-comment-btn ${comment.isliked ? "isliked" : ""}" name="like_post"  value="${comment.id}" id="likes">
+                            <i class="fas fa-thumbs-up"></i>
+                            ${comment.likes }
+                        </button>
+                        <button class="dislike-comment-btn ${comment.isdisliked ? "isdisliked" : ""}" name="deslike_post" value="${comment.id}" id="likes">
+                            <i class="fas fa-thumbs-down"></i>
+                            ${comment.dislikes}
+                        </button>
+                </li>`})       
       }
     }
     }))

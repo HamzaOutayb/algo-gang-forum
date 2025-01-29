@@ -25,6 +25,7 @@ func NewBucketToken(maxTokens int, refillTime time.Duration) *BucketToken {
 	}
 }
 
+
 func (bt *BucketToken) Allow() bool {
 	now := time.Now()
 	elapsed := now.Sub(bt.LastRefill) // 2
@@ -74,6 +75,7 @@ func (rl *RateLimiter) RateMiddlewareAuth(next http.Handler, maxTokens int, dura
 	})
 }
 
+
 func (rl *RateLimiter) RateMiddleware(next http.Handler, maxTokens int, duration time.Duration, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userCookie, err := r.Cookie("session_token")
@@ -118,7 +120,7 @@ func (rl *RateLimiter) RemoveSleepUsers() {
 
 func (rl *RateLimiter) GetUserID(userUID string, db *sql.DB) (int, error) {
 	var userID int
-	err := db.QueryRow("SELECT id FROM user_profile WHERE uid = ?", userUID).Scan(&userID)
+	err := db.QueryRow("SELECT id FROM user WHERE uid = ?", userUID).Scan(&userID)
 	if err != nil {
 		return 0, err
 	}

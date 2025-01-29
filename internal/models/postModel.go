@@ -37,16 +37,43 @@ type Comment struct {
 	Content string `json:"content"`
 }
 
+type ShowComment struct {
+	Id         int    `json:"id"`
+	Author     string `json:"author"`
+	Content    string `json:"content"`
+	Likes      int    `json:"likes"`
+	Dislikes   int    `json:"dislikes"`
+	Date       string `json:"date"`
+	IsLiked    bool   `json:"isliked"`
+	IsDisliked bool   `json:"isdisliked"`
+}
+
 var PostsPerPage = 20
 
 var PostErrors struct {
-	PostNotExist string
-	ContentLength string
-	TitleLength string
+	PostNotExist        string
+	ContentLength       string
+	TitleLength         string
 	CategoryDoesntExist string
-} = struct{ PostNotExist string; ContentLength string; TitleLength string; CategoryDoesntExist string }{
-	PostNotExist: "post doesn't exist",
-	ContentLength: "invalid content length",
-	TitleLength: "invalid title length",
+} = struct {
+	PostNotExist        string
+	ContentLength       string
+	TitleLength         string
+	CategoryDoesntExist string
+}{
+	PostNotExist:        "post doesn't exist",
+	ContentLength:       "invalid content length",
+	TitleLength:         "invalid title length",
 	CategoryDoesntExist: "categories doesn't exist",
+}
+
+var CommentErrors struct {
+	InvalidCommentLength string
+	InvalidPage          string
+} = struct {
+	InvalidCommentLength string
+	InvalidPage          string
+}{
+	InvalidCommentLength: "invalid comment length",
+	InvalidPage:          "invalid page number",
 }
