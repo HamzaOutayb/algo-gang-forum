@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"html"
@@ -98,14 +97,16 @@ func (s *Service) GetPostbyid(idstr string, userid int) (models.Post, error) {
 }
 
 func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
-	start := (num * models.PostsPerPage)
+	start := ((num - 1) * models.PostsPerPage)
 	total := 0
 	err := s.Database.Tablelen("post", &total)
 	if err != nil {
 		return nil, err
 	}
-	if start > total {
-		return nil, sql.ErrNoRows
+	if num - 1 == (total/models.PostsPerPage) + (total % models.PostsPerPage) {
+		start = models.PostsPerPage % total
+	} else if num - 1 > (total/models.PostsPerPage) + (total % models.PostsPerPage) {
+		return []models.Post{},nil
 	}
 	row, err := s.Database.ExtractPosts(start)
 	if err != nil {
@@ -152,5 +153,3 @@ func (s *Service) ValidateInput(comment models.Comment) error {
 
 	return nil
 }
-
-

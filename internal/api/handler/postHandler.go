@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -102,7 +101,11 @@ func (H *Handler) GetPostByIdHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
-	num, _ := strconv.Atoi(r.URL.Query().Get("page-number"))
+	num, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, nil)
+		return
+	}
 
 	var Posts []models.Post
 
@@ -124,8 +127,6 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 			}{Error: "Database Locked"})
 			return
 		}
-
-		log.Println("Unexpected error", err)
 		utils.WriteJson(w, http.StatusInternalServerError, struct {
 			Error string `json:"error"`
 		}{Error: err.Error()})

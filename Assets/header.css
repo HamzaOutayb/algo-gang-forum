@@ -9,38 +9,29 @@
 .header-content {
     position: fixed;
     top: 0;
-    background-color: #151616;
+    background-color: #222B38;
     left: 0;
     width: 100%;
     display: grid;
     grid-template-columns: repeat(5, auto);
     grid-template-rows: 56px;
     align-items: center;
-    box-shadow:  0 4px 6px rgba(235, 18, 35, 0.5);
+    box-shadow:  0 4px 6px  rgba(114, 119, 123, 0.7);
 }
 
-.button-wrapper {
-    grid-area: 1/6/1/6;
-    color: #fff;
-    background-color: #e63900;
-    border: none;
-    padding: 8px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
+
 
 .header-content h3 {
     grid-area: 1/1/1/1;
     margin-left: 30px;
-    color: #fff;
+    color: #aaaaaa;
 }
 
 
 
 .header-content h3:hover {
-    color: #ffa500; /* Orange color on hover */
+    color: #7b7672; /* Orange color on hover */
+    transition: 0.5s ;
 }
 
 /* Logout button container */
@@ -61,8 +52,8 @@
     transition: background-color 0.3s ease;
 }
 .logout-button {
-    background-color: #e63900; /* Reddish-orange */
-    color: #fff;
+    background-color: #c1c9d0; /* Reddish-orange */
+    color: #000000;
     border: none;
     padding: 8px 15px;
     font-size: 14px;
@@ -72,7 +63,7 @@
 }
 
 .logout-button:hover {
-    background-color: #e63900; /* Darker shade on hover */
+    background-color: #7b7672; /* Darker shade on hover */
 }
 
 /* Icon inside the logout button */

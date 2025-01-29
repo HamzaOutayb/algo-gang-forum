@@ -19,8 +19,11 @@ body {
     width: 100%;
 }
 
-.reacted {
-    background-color: #a1440e !important;
+.like-reacted {
+    background-color: #2074F7 !important;
+}
+.dislike-reacted {
+    background-color:rgba(255, 0, 0, 0.658) !important;
 }
 
 
@@ -31,20 +34,21 @@ body {
 .sidebar-left {
     position: fixed;
     display: flex;
+    background-color: #222B38;
     flex-direction: column;
     padding: 20px;
     box-sizing: border-box;
-    box-shadow: 3px 2px 2px 3px rgba(235, 85, 16, 0.7);
+    box-shadow: 3px 2px 2px 3px rgba(114, 119, 123, 0.7);
     width: 250px;
     height: 100%;
-    margin-left: 5px;
-    margin-top: 65px;
+    margin-left: 1px;
+    margin-top: 60px;
 }
 .listaside {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    background-color: #414040;
+    background-color: rgba(0, 0, 0, 0);
     border-radius: 20px;
     box-shadow: 0 2px 4px rgba(235, 85, 16, 0.1);
     margin-bottom: 1rem;
@@ -92,22 +96,24 @@ body {
 }
 
 .users:hover {
-    color: #e63900;
+    color: #F9FAFB;
+    background-color: #141C23;
 }
 
 .sidebar-left h2 {
-    color: #e63900;
+    color: #aaaaaa;
     font-size: 20px;
     margin-bottom: 1rem;
 }
 
 .posts-container {
+    background-color: #141C23;
     margin-left: 250px;
     padding: 20px;
     flex: 1;
 }
 button[type="submit"] {
-    background-color: #ff8c42; /* Orange */
+    background-color: #c1c9d0; /* Orange */
     color: #000; /* Black text */
     padding: 8px 16px;
   border: none;
@@ -122,13 +128,12 @@ button[type="submit"] {
   }
   
   button[type="submit"]:hover {
-    background-color: #000; /* Black on hover */
-    color: #fff; /* White text on hover */
+    background-color: #7b7672;
   }
 
 
 .posts-container h1 {
-    color: rgb(235, 85, 16);
+    color:#aaaaaa;
     font-size: 24px;
     margin-bottom: 10px;
     margin-top: 60px;
@@ -139,7 +144,7 @@ button[type="submit"] {
     width: 80%;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(235, 85, 16, 0.1);
+    box-shadow: 0 2px 4px rgba(122, 122, 122, 0.5);
     margin-bottom: 1rem;
     margin-left: 25px;
     list-style: none;
@@ -186,18 +191,6 @@ button[type="submit"] {
     margin-left: 23rem;
 }
 
-.show-all-comments {
-    color: black;
-    border: none;
-    padding: 0.5rem 1rem;
-    margin-left: 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.3s ease;
-}
 
 .like-comment-btn,
 .dislike-comment-btn {
@@ -214,31 +207,26 @@ button[type="submit"] {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.show-all-comments:hover,
+
 .like-comment-btn:hover,
 .dislike-comment-btn:hover {
-    background-color: #e63900;
+    background-color: #212225;
 }
-
-.like-comment-btn i,
-.dislike-comment-btn i {
+.like-comment-btn:hover i {
     font-size: 16px;
+    color: #75a4cd;
+    transition: 0.5s;
+}
+.dislike-comment-btn:hover i {
+    font-size: 16px;
+    color: #75a4cd;
+    transition: 0.5s;
 }
 
 
 .like-count,
 .dislike-count {
     font-size: 14px;
-}
-
-.highlight-like {
-    background-color: black;
-    color: white;
-}
-
-.highlight-dislike {
-    background-color: black;
-    color: #e63900;
 }
 
 
@@ -297,7 +285,13 @@ button[type="submit"] {
     background-color: #d8491d;
 }
 
-.post-item p {
+.post-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #ddd;
+    overflow-wrap: break-word;
+}
+.content-preview {
     font-family: math;
     font-size: 17px;
     color: #374151;
@@ -308,6 +302,7 @@ button[type="submit"] {
     overflow-wrap: break-word;
     max-width: 100%;
 }
+
 
 
 
@@ -430,7 +425,7 @@ button[type="submit"] {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.8);
     z-index: 4999;
 }
 .create-post-container {
@@ -439,7 +434,7 @@ button[type="submit"] {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #d8491d;
+    background-color: #7b7277;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -470,16 +465,21 @@ button[type="submit"] {
 
 .create-post-container button {
     padding: 10px 20px;
-    background-color: #ff7300;
+    background-color: #d0c1c9;
     color: #000000;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
+.create-post-container button:hover {
+    background-color: #262325;
+   color: aliceblue;
+}
 
 .create-post-container .checkbox-container input[type="checkbox"] {
-    margin-right: 5px; 
+    margin: 5px;
 }
+
 #create-post-button {
     padding: 10px 20px;
     margin-top: 20%;
@@ -500,7 +500,11 @@ button[type="submit"] {
 
 @media (max-width: 768px) {
     .posts-container {
-        margin-left: 0;
+        margin-left: 0px;
+    }
+    .post-item {
+        margin-left: 0px;
+        width: 100%;
     }
     .sidebar-left {
         display: none;
