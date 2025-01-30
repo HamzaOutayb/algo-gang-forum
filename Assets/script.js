@@ -8,6 +8,7 @@ let nomorecomment = false;
 let nomoremessage = false;
 let nomoreusers = false;
 let nomoreconversations = false;
+var NofetchComment = false
 
 
 if (document.cookie) {
@@ -291,6 +292,7 @@ async function FetchConversations() {
 
 async function GetAllPosts(page = 1) {
   if (nomoreposts) {
+    NofetchComment = false
     return;
   }
   await fetch(`/api/post?page=${page}`) .then((response) => response.json()).then( async (e) => {
@@ -336,13 +338,16 @@ async function GetAllPosts(page = 1) {
     InsertComment()
     ChatBox()
     let debounceTimer
+    let done = false
     window.addEventListener("scroll", function() {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
-       
-        clearTimeout(debounceTimer);
+        if (!done && !NofetchComment){
+          GetAllPosts(++page_posts)
+          clearTimeout(debounceTimer);
+          done = true
+        }
         debounceTimer = setTimeout(() => {
-          console.log('scrolling')
-            GetAllPosts(++page_posts);
+          done = false
         }, 1000);
           
       }
@@ -405,6 +410,7 @@ function GetSinglePost() {
                             <i class="fas fa-comment">add</i>
                         </button>
                 </li>`
+                NofetchComment = true
       }
       GetAllComment(id)
   let debounceTimer
@@ -424,6 +430,9 @@ function GetSinglePost() {
 }
 
 async function GetAllComment(id,page_comments = 1) {
+  if (nomorecomment) {
+    return
+  }
   let Comment = await fetch(`/api/GetComments/${id}/?page=${page_comments}`).then(response => response.json())      
   if (Comment) { 
     const commentList = document.querySelector("main > ul")
