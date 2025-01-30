@@ -310,12 +310,12 @@ async function GetAllPosts(page = 1) {
 
                   <!-- <div class="interaction-section"> -->
                   <div class="interaction-section">
-                      <button class="like-comment-btn ${data.isliked ? "like-reacted" : ""}" name="like_post" value="${data.id}" id="likes"
+                      <button class="like-post-btn ${data.isliked ? "like-reacted" : ""}" name="like_post" value="${data.id}" id="likes"
                           onclick="">
                           <i class="fas fa-thumbs-up"></i>
                           ${data.likes }
                       </button>
-                      <button class="dislike-comment-btn ${data.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${data.id}" id="likes"
+                      <button class="dislike-post-btn ${data.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${data.id}" id="likes"
                           onclick="">
                           <i class="fas fa-thumbs-down"></i>
                           ${data.dislikes}
@@ -394,12 +394,12 @@ function GetSinglePost() {
 
                     <!-- <div class="interaction-section"> -->
                     <div class="interaction-section">
-                      <button class="like-comment-btn ${post.isliked ? "like-reacted" : ""}" name="like_post" value="${post.id}" id="likes"
+                      <button class="like-post-btn ${post.isliked ? "like-reacted" : ""}" name="like_post" value="${post.id}" id="likes"
                             onclick="">
                             <i class="fas fa-thumbs-up"></i>
                             ${post.likes }
                         </button>
-                        <button class="dislike-comment-btn ${post.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${post.id}" id="likes"
+                        <button class="dislike-post-btn ${post.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${post.id}" id="likes"
                             onclick="">
                             <i class="fas fa-thumbs-down"></i>
                             ${post.dislikes}
@@ -413,6 +413,8 @@ function GetSinglePost() {
                 NofetchComment = true
       }
       GetAllComment(id)
+      
+      
   let debounceTimer
     window.addEventListener("scroll", function() {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
@@ -438,22 +440,89 @@ async function GetAllComment(id,page_comments = 1) {
     const commentList = document.querySelector("main > ul")
     console.log(Comment);
     
-    Comment.forEach((comment) => { 
+   await Comment.forEach((comment) => { 
       commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
                 <div class="username">${comment.author}</div>
                 <p class="content-preview">${comment.content }</p>
                 <div class="post-date">${comment.date }</div>
                 <div class="interaction-section">
-                    <button class="like-comment-btn ${comment.isliked ? "isliked" : ""}" name="like_post"  value="${comment.id}" id="likes">
+                    <button class="like-comment-btn ${comment.isliked ? "like-reacted" : ""}" name="like_post"  value="${comment.id}" id="likes">
                         <i class="fas fa-thumbs-up"></i>
                         ${comment.likes }
                     </button>
-                    <button class="dislike-comment-btn ${comment.isdisliked ? "isdisliked" : ""}" name="deslike_post" value="${comment.id}" id="likes">
+                    <button class="dislike-comment-btn ${comment.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${comment.id}" id="likes">
                         <i class="fas fa-thumbs-down"></i>
                         ${comment.dislikes}
                     </button>
-            </li>`})       
+            </li>`})
+    Likes_Comments()
+    InsertComment()
+    Likes_Posts()    
   }
+}
+async function Likes_Comments() {
+  document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+    
+    const id =  await e.target.closest('.comment-item').getAttribute('data-comment-id');
+    
+    const data = { thread_type: 'comment', thread_id: parseInt(id), react: 1 }
+    let response = await fetch('/api/reaction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+      })
+      response = await response.json()
+      const dislikeButton = await e.target.closest('.comment-item').querySelector('button.dislike-comment-btn')
+       if (response.isliked){
+          e.target.classList.add("like-reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }else {
+          e.target.classList.remove("like-reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }
+        if (response.isdisliked){
+          dislikeButton.classList.add("dislike-reacted")
+          dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }else {
+          dislikeButton.classList.remove("dislike-reacted")
+          dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }
+    
+    
+    }))
+    document.querySelectorAll('.dislike-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+     
+      const id = await e.target.closest('.comment-item').getAttribute('data-comment-id');
+      
+      const data = { thread_type: 'comment', thread_id: parseInt(id), react: 2 }
+      let response = await fetch('/api/reaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+        })
+        response = await response.json()
+        
+        const likeButton =  await e.target.closest('.comment-item').querySelector('button.like-comment-btn')
+        if (response.isliked){
+          likeButton.classList.add("like-reacted")
+          likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }else {
+          likeButton.classList.remove("like-reacted")
+          likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+        }
+        if (response.isdisliked){
+          e.target.classList.add("dislike-reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }else {
+           e.target.classList.remove("dislike-reacted")
+          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+        }
+
+      }))
 }
 
 
@@ -496,7 +565,7 @@ function ChatBox() {
         }else{
           chatbox.innerHTML += `
          <h4>${e.Sender} :</h4>
-          <div class="message_to">
+          <div class="message_sender">
             <p>${e.Content}</p>
           </div>
           <h6>${e.Created_at}</h6></br>
@@ -532,13 +601,22 @@ async  function  startchat() {
 
   ws.onmessage = (message) => {
   const parsedMessage = JSON.parse(message.data);
+  console.log(message)
     const chatBox = document.getElementById('chatBox');
+    if (message.Sender == TO) {
     chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
             <div class="message_to">
               <p>${parsedMessage.Message}</p>
             </div>
             <h6>${parsedMessage.Date}</h6></br>`;
-      };
+    }else {
+      chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
+      <div class="message_sender">
+        <p>${parsedMessage.Message}</p>
+      </div>
+      <h6>${parsedMessage.Date}</h6></br>`;
+    }
+}
 }
 
 
@@ -569,7 +647,7 @@ async function CreatePost() {
 
 
  function Likes_Posts() {
-  document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+  document.querySelectorAll('.like-post-btn').forEach(e => e.addEventListener('click', async (e) => {
     
     const id =  await e.target.closest('.post-item').getAttribute('data-post-id');
     
@@ -582,7 +660,7 @@ async function CreatePost() {
       body: JSON.stringify(data)
       })
       response = await response.json()
-      const dislikeButton = await e.target.closest('.post-item').querySelector('button.dislike-comment-btn')
+      const dislikeButton = await e.target.closest('.post-item').querySelector('button.dislike-post-btn')
        if (response.isliked){
           e.target.classList.add("like-reacted")
           e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
@@ -600,7 +678,7 @@ async function CreatePost() {
     
     
     }))
-    document.querySelectorAll('.dislike-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
+    document.querySelectorAll('.dislike-post-btn').forEach(e => e.addEventListener('click', async (e) => {
      
       const id = await e.target.closest('.post-item').getAttribute('data-post-id');
       
@@ -614,7 +692,7 @@ async function CreatePost() {
         })
         response = await response.json()
         
-        const likeButton =  await e.target.closest('.post-item').querySelector('button.like-comment-btn')
+        const likeButton =  await e.target.closest('.post-item').querySelector('button.like-post-btn')
         if (response.isliked){
           likeButton.classList.add("like-reacted")
           likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`

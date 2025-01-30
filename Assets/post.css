@@ -193,7 +193,8 @@ button[type="submit"] {
 
 
 .like-comment-btn,
-.dislike-comment-btn {
+.dislike-comment-btn,.like-post-btn,
+.dislike-post-btn {
     color: black;
     border: none;
     padding: 0.5rem 1rem;
@@ -209,15 +210,16 @@ button[type="submit"] {
 
 
 .like-comment-btn:hover,
-.dislike-comment-btn:hover {
+.dislike-comment-btn:hover,.like-post-btn:hover,
+.dislike-post-btn:hover {
     background-color: #212225;
 }
-.like-comment-btn:hover i {
+.like-comment-btn:hover i,.like-post-btn:hover i {
     font-size: 16px;
     color: #75a4cd;
     transition: 0.5s;
 }
-.dislike-comment-btn:hover i {
+.dislike-comment-btn:hover i ,.dislike-post-btn:hover i{
     font-size: 16px;
     color: #75a4cd;
     transition: 0.5s;
@@ -339,17 +341,15 @@ button[type="submit"] {
 
 .chat-container {
     position: fixed;
-    top: 20%;
-    width: 900px;
-    left: 20%;
+    width: 50%;
+    height: 50%;
+    transform: translate(40%,40%);
     background-color:rgba(95, 80, 80, 0.1);
-    border: 1px solid #ac3701;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(86, 90, 93, 0.5);
     display: flex;
     flex-direction: column;
     padding: 20px;
-    height: 500px;
   }
 
   .chat-box {
@@ -391,12 +391,12 @@ button[type="submit"] {
 
   .message_to {
     margin-bottom: 10px;
-    background-color: #90b4db;
+    background-color: #1F1E28;
   }
   .message_sender {
     justify-items: end;
     margin-bottom: 10px;
-    background-color: #1a5faa;
+    background-color: #6953EF;
   }
   .X {
     position: absolute;
