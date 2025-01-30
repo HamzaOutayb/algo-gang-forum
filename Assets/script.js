@@ -11,6 +11,9 @@ let nomoreconversations = false;
 var NofetchComment = false
 
 
+let is_resize = false;
+    let done_resize = false;
+
 if (document.cookie) {
   GoToHomePage()
 }
@@ -161,6 +164,8 @@ function GoToLoginPage() {
 }
 
 async function GoToHomePage() {
+  is_resize = false;
+done_resize = false;
   document.body.innerHTML = ""
 
 
@@ -337,6 +342,14 @@ async function GetAllPosts(page = 1) {
     GetSinglePost()
     InsertComment()
     ChatBox()
+    
+    const width = window.innerWidth;
+    if (width < 768) {
+      console.log('width', width);
+      
+    Resize();
+    }
+    window.addEventListener('resize', Resize);
     let debounceTimer
     let done = false
     window.addEventListener("scroll", function() {
@@ -556,19 +569,21 @@ function ChatBox() {
        data.forEach(e => {
         if (e.Sender == TO) {
           chatbox.innerHTML += `
-          <h4>${e.Sender} :</h4>
-          <div class="message_to">
-            <p>${e.Content}</p>
-          </div>
-          <h6>${e.Created_at}</h6></br>
+
+          <div class="Message_TO">
+          <h4 >${e.Sender}</h4>
+            <span>${e.Content}</span>
+          <h6>${e.Created_at}</h6>
+          </div></br>
           `
         }else{
           chatbox.innerHTML += `
-         <h4>${e.Sender} :</h4>
-          <div class="message_sender">
-            <p>${e.Content}</p>
-          </div>
-          <h6>${e.Created_at}</h6></br>
+          <div class="Message_From">
+         <h4>${e.Sender}</h4>
+
+            <span>${e.Content}</span>
+          <h6>${e.Created_at}</h6>
+          </div></br>
           `
         }
        })
@@ -603,18 +618,19 @@ async  function  startchat() {
   const parsedMessage = JSON.parse(message.data);
   console.log(message)
     const chatBox = document.getElementById('chatBox');
-    if (message.Sender == TO) {
-    chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
-            <div class="message_to">
-              <p>${parsedMessage.Message}</p>
-            </div>
-            <h6>${parsedMessage.Date}</h6></br>`;
+    if (message.Sender == to) {
+    chatBox.innerHTML += ` <div class="Message_From">
+          <h4 >${parsedMessage.Sender}</h4>
+            <span>${parsedMessage.Message}</span>
+          <h6>${parsedMessage.Date}</h6>
+          </div></br>`;
     }else {
-      chatBox.innerHTML += ` <h4>${parsedMessage.Sender} :</h4>
-      <div class="message_sender">
-        <p>${parsedMessage.Message}</p>
-      </div>
-      <h6>${parsedMessage.Date}</h6></br>`;
+      chatBox.innerHTML += `
+          <div class="Message_TO">
+         <h4>${parsedMessage.Sender}</h4>
+            <span>${parsedMessage.Message}</span>
+          <h6>${parsedMessage.Date}</h6>
+          </div></br>`;
     }
 }
 }
@@ -710,43 +726,35 @@ async function CreatePost() {
 
       }))
     }
-    // let is = false;
-    // let done = false;
-    // const width = window.innerWidth;
-    // if (width < 768) {
-    //   console.log('width', width);
-      
-    // Resize();
-    // }
-    
-    // window.addEventListener('resize', Resize);
+   
 
-    // function Resize() {
-    //    const width = window.innerWidth;
+    function Resize() {
+       const width = window.innerWidth;
       
-    //     if (width < 768) {
-    //       if (!done) {
-    //         done = true;
-    //         const buttonaside = document.createElement('button');
-    //         buttonaside.classList.add('buttonaside');
-    //         document.body.appendChild(buttonaside);
+        if (width < 768) {
+          if (!done_resize) {
+            done_resize = true;
+            const buttonaside = document.createElement('button');
+            buttonaside.classList.add('buttonaside');
+            document.body.appendChild(buttonaside);
       
          
-    //         buttonaside.addEventListener('click', () => {
-    //           if (is) {
-    //             console.log('is0', is);
-    //             document.querySelector('.sidebar-left').style.display = 'none';
-    //           } else {
-    //             console.log('is1', is);
-    //             document.querySelector('.sidebar-left').style.display = 'block';
-    //           }
-    //           is = !is; 
-    //         });
-    //       }
-    //     } else {
-    //       done = false;
-    //       is = false; 
-    //       document.querySelector('.buttonaside')?.remove();
-    //       document.querySelector('.sidebar-left')?.style.display = 'block'; 
-    //     }
-    //   }
+            buttonaside.addEventListener('click', () => {
+              if (is_resize) {
+                document.querySelector('.sidebar-left').style.display = 'none';
+              } else {
+                document.querySelector('.sidebar-left').style.display = 'block';
+              }
+              is_resize = !is_resize; 
+            });
+          }
+        } else {
+          done_resize = false;
+          is_resize = false; 
+            document.querySelector('.buttonaside')?.remove();
+            const sidebar = document.querySelector('.sidebar-left');
+if (sidebar) {
+  sidebar.style.display = 'block';
+}
+        }
+      }

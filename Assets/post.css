@@ -341,9 +341,11 @@ button[type="submit"] {
 
 .chat-container {
     position: fixed;
-    width: 50%;
-    height: 50%;
-    transform: translate(40%,40%);
+    width: 80%;
+    height: 80%;
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%,20%);
     background-color:rgba(95, 80, 80, 0.1);
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(86, 90, 93, 0.5);
@@ -355,12 +357,13 @@ button[type="submit"] {
   .chat-box {
     flex-grow: 1;
     overflow-y: auto;
+    overflow-x:hidden;
     margin-bottom: 20px;
     padding: 10px;
     background-color: rgb(123, 121, 145);
     border: 1px solid #ddd;
     border-radius: 5px;
-    max-height: 300px;
+    max-height: 100%;
   }
 
   .input-area {
@@ -389,15 +392,56 @@ button[type="submit"] {
     background-color: #a1440e;
   }
 
-  .message_to {
-    margin-bottom: 10px;
-    background-color: #1F1E28;
-  }
-  .message_sender {
-    justify-items: end;
-    margin-bottom: 10px;
-    background-color: #6953EF;
-  }
+.Message_TO {  
+    display: inline-block;         
+    background-color: #EBECF6; 
+    padding: 10px;               
+    margin: 5px;                 
+    border-radius: 5px;         
+    max-width: 300px;                                         
+    width: auto;                 
+    word-wrap: break-word;      
+}
+ 
+ 
+  .Message_From {  
+    display: inline-block;         
+    background-color: #BFF2A4; 
+    padding: 10px;               
+    margin: 5px;                 
+    border-radius: 5px;         
+    max-width: 300px;                                         
+    width: auto;                 
+    word-wrap: break-word;      
+}  
+
+.Message_From h4,  
+.Message_From h6,  
+.Message_From span,
+.Message_TO h4,  
+.Message_TO h6,  
+.Message_TO span {  
+    display: block;              
+    margin: 0;                 
+}  
+
+.Message_From h4
+, .Message_TO h4 {  
+    font-weight: bold;          
+}  
+
+.Message_From h6,
+.Message_TO h6 {  
+    font-size: 0.8em;          
+    color: #888;                
+}  
+
+.Message_From span,  
+.Message_TO span {  
+    padding: 5px 10px 5px 10px;
+    color: #000000;                 
+}
+
   .X {
     position: absolute;
     top: 7px;
