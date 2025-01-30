@@ -25,10 +25,11 @@ func (s *Service) GetComments(postId, page, userId int) ([]models.ShowComment, e
 		return nil, err
 	}
 
-	if from >= commentsCount {
-		return nil, errors.New(models.CommentErrors.InvalidPage)
+	if page-1 == (commentsCount/models.PostsPerPage)+(commentsCount%models.PostsPerPage) {
+		from = models.PostsPerPage % commentsCount
+	} else if page-1 > (commentsCount/models.PostsPerPage)+(commentsCount%models.PostsPerPage) {
+		return []models.ShowComment{}, nil
 	}
-
 	// Get comments
 	return s.Database.GetCommentsFrom(from, postId, userId)
 }

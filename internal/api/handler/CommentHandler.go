@@ -84,6 +84,7 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != http.ErrNoCookie {
 		id, _ = h.Service.Database.GetUser(cookie.Value)
 	}
+	
 	// Get Comments
 	comments, err := h.Service.GetComments(postId, pageNumber, id)
 	if err != nil {

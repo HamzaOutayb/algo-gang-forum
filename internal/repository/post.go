@@ -130,6 +130,10 @@ func (d *Database) Tablelen(table string, total *int) error {
 	err := d.Db.QueryRow("SELECT COUNT(*) FROM " + table).Scan(total)
 	return err
 }
+func (d *Database) TablelenComment(id string, total *int) error {
+	err := d.Db.QueryRow("SELECT COUNT(*) FROM comment WHERE post_id = ? " + id).Scan(total)
+	return err
+}
 
 func (d *Database) ExtractPosts(start int) (*sql.Rows, error) {
 	rows, err := d.Db.Query(`SELECT post_id, post_title, post_content, post_date, post_author, post_likes, post_dislikes, post_comments_count

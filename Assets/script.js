@@ -3,7 +3,12 @@ var page_comments = 1;
 var page_messages = 1;
 var page_users = 1;
 var page_conversations = 1;
-nomoreposts = false;
+let nomoreposts = false;
+let nomorecomment = false;
+let nomoremessage = false;
+let nomoreusers = false;
+let nomoreconversations = false;
+
 
 if (document.cookie) {
   GoToHomePage()
@@ -401,29 +406,45 @@ function GetSinglePost() {
                         </button>
                 </li>`
       }
-      let Comment = await fetch(`/api/GetComments/${id}/?page=1`).then(response => response.json())      
-      if (Comment) { 
-        const commentList = document.querySelector("main > ul")
-        console.log(Comment);
-        
-        Comment.forEach((comment) => { 
-          commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
-                    <div class="username">${comment.author}</div>
-                    <p class="content-preview">${comment.content }</p>
-                    <div class="post-date">${comment.date }</div>
-                    <div class="interaction-section">
-                        <button class="like-comment-btn ${comment.isliked ? "isliked" : ""}" name="like_post"  value="${comment.id}" id="likes">
-                            <i class="fas fa-thumbs-up"></i>
-                            ${comment.likes }
-                        </button>
-                        <button class="dislike-comment-btn ${comment.isdisliked ? "isdisliked" : ""}" name="deslike_post" value="${comment.id}" id="likes">
-                            <i class="fas fa-thumbs-down"></i>
-                            ${comment.dislikes}
-                        </button>
-                </li>`})       
+      GetAllComment(id)
+  let debounceTimer
+    window.addEventListener("scroll", function() {
+      if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
+       
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          console.log('scrolling')
+          GetAllComment(id,++page_comments);
+        }, 1000);
+          
       }
+  });
     }
     }))
+}
+
+async function GetAllComment(id,page_comments = 1) {
+  let Comment = await fetch(`/api/GetComments/${id}/?page=${page_comments}`).then(response => response.json())      
+  if (Comment) { 
+    const commentList = document.querySelector("main > ul")
+    console.log(Comment);
+    
+    Comment.forEach((comment) => { 
+      commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
+                <div class="username">${comment.author}</div>
+                <p class="content-preview">${comment.content }</p>
+                <div class="post-date">${comment.date }</div>
+                <div class="interaction-section">
+                    <button class="like-comment-btn ${comment.isliked ? "isliked" : ""}" name="like_post"  value="${comment.id}" id="likes">
+                        <i class="fas fa-thumbs-up"></i>
+                        ${comment.likes }
+                    </button>
+                    <button class="dislike-comment-btn ${comment.isdisliked ? "isdisliked" : ""}" name="deslike_post" value="${comment.id}" id="likes">
+                        <i class="fas fa-thumbs-down"></i>
+                        ${comment.dislikes}
+                    </button>
+            </li>`})       
+  }
 }
 
 
