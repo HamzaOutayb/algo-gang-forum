@@ -16,6 +16,8 @@ let is_resize = false;
 
 if (document.cookie) {
   GoToHomePage()
+} else {
+  GoToLoginPage()
 }
 
 function Login_page(){
@@ -65,8 +67,8 @@ async function Login (Login_re,key_re) {
       errorMessage.classList.add("errorMessage")
       errorMessage.innerHTML = errorData
     } else {
-      
       GoToHomePage()
+     
     }
   
     // errorMessage.classList.add("errorMessage")
@@ -98,6 +100,17 @@ async function Register () {
     }
   
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function GoToLoginPage() {
   if (document.querySelector("link[rel='stylesheet'][href='/Assets/post.css']")) {
@@ -166,6 +179,7 @@ function GoToLoginPage() {
 async function GoToHomePage() {
   is_resize = false;
 done_resize = false;
+StartWs()
   document.body.innerHTML = ""
 
 
@@ -208,7 +222,6 @@ FetchConversations()
 }
 
 GetAllPosts()
-  
   
 }
 Login_page()
@@ -390,6 +403,9 @@ function InsertComment() {
     }))
 }
 
+
+
+
 function GetSinglePost() {
   let showAllComments = document.querySelectorAll(`.post-item`)
     showAllComments.forEach(e => e.addEventListener("click", async (e) => {
@@ -444,6 +460,9 @@ function GetSinglePost() {
     }))
 }
 
+
+
+
 async function GetAllComment(id,page_comments = 1) {
   if (nomorecomment) {
     return
@@ -473,6 +492,10 @@ async function GetAllComment(id,page_comments = 1) {
     Likes_Posts()    
   }
 }
+
+
+
+
 async function Likes_Comments() {
   document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
     
@@ -539,13 +562,13 @@ async function Likes_Comments() {
 }
 
 
-function ChatBox() {
-  let users = document.querySelectorAll("button.users")
+ function ChatBox() {
+  let users =  document.querySelectorAll("button.users")
   
   users.forEach(e => e.addEventListener("click", async () => {
      var TO = e.innerHTML;
      
-     document.querySelector("main").innerHTML = `
+     document.querySelector("main").innerHTML += `
      <div class="chat-container">
      <button class="X">X</button>
      <h3 id="TO">${TO}</h3>
@@ -589,42 +612,38 @@ function ChatBox() {
        })
       }
       startchat()
+      document.body.style.overflow = "hidden";
       document.querySelector(".X").addEventListener("click", () => {
         GoToHomePage()
+        document.body.style.overflow = "auto"; ;
       })
      })
   }))
   
 }
 
-async  function  startchat() {
-  let to = document.querySelector('#TO').innerHTML;
-  const webs =  `ws://localhost:8080/chat?to=${to}`
-  if (to === '') {
-      return;
-  }
-  console.log("test",webs,to);
-  
-  let ws = new WebSocket(webs)
 
+
+async  function  startchat() {
   const chatBox = document.getElementById('messageInput');
   const button = document.querySelector('.send-btn');
   button.addEventListener('click', () => {
-      ws.send(chatBox.value);
+      ws.send(JSON.stringify({ message: chatBox.value, to: to }));
       chatBox.value = '';
   });
 
   ws.onmessage = (message) => {
-  const parsedMessage = JSON.parse(message.data);
-  console.log(message)
-    const chatBox = document.getElementById('chatBox');
-    if (message.Sender == to) {
+   const parsedMessage = JSON.parse(message.data);
+   console.log(message)
+   if (message.Message) {
+   const chatBox = document.getElementById('chatBox');
+   if (message.Sender == to) {
     chatBox.innerHTML += ` <div class="Message_From">
           <h4 >${parsedMessage.Sender}</h4>
             <span>${parsedMessage.Message}</span>
           <h6>${parsedMessage.Date}</h6>
           </div></br>`;
-    }else {
+   }else {
       chatBox.innerHTML += `
           <div class="Message_TO">
          <h4>${parsedMessage.Sender}</h4>
@@ -632,6 +651,26 @@ async  function  startchat() {
           <h6>${parsedMessage.Date}</h6>
           </div></br>`;
     }
+  }else {
+    console.log(message)
+  }
+}
+}
+
+
+async function StartWs() {
+  var ws = new WebSocket(`ws://localhost:8080/chat`)
+  ws.onopen = () => {
+    console.log('connected')
+  
+  ws.send = () => {
+    ws.send("test")
+  }
+  ws.message = (message) => {
+    console.log(message)
+    // get slice user online
+
+  }
 }
 }
 

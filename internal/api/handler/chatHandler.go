@@ -26,35 +26,49 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	Message string
+	User_name string
 }
 
 type Data_send struct {
-	Sender  string
-	Message string
+	Sender  string `json:"sender"`
+	Message string `json:"message"`
 	Date    time.Time
-	To      string
+	To      int `json:"to"`
+	list    []int
 }
 
 var (
-	conns = make(map[int]*websocket.Conn)
+	conns = make(map[*websocket.Conn]int)
 	mu    = &sync.Mutex{}
 	data  Data_send
 )
 
+
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("chat service")
 	user, err := r.Cookie("session_token")
 	if err != nil {
+		
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
-	To := r.URL.Query().Get("to")
+	
 	if user.Value == "" {
+		
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	user_name, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, To)
+	
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		
+		log.Println(err)
+		return
+	}
+	
+	user_name,user_id, err := H.Service.Database.GetId(user.Value)
+	if err != nil {
+		
 		if err == sqlite3.ErrLocked {
 			http.Error(w, "data base locked", http.StatusLocked)
 		}
@@ -62,67 +76,51 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		// err db is locked
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+
 
 	defer func() {
+		fmt.Println("closing connection")
 		fmt.Println(user_name + " disconnected")
 		mu.Lock()
-		delete(conns, user_id)
+		delete(conns, conn)
 		mu.Unlock()
 		conn.Close()
 	}()
 
 	mu.Lock()
-	conns[user_id] = conn
-	/*data.List_online = append(data.List_online, user_id)
-	datajson, err := json.Marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
+	conns[conn] = user_id
+	if !checkisincluded(data.list, user_id) {
+	data.list = append(data.list, user_id)
 	}
-
-	if err = conn.WriteMessage(1, datajson); err != nil {
-		log.Println(err)
-		return
-	}*/
-
+	fmt.Println(data.list)
+	go broadcast(conns, data.list)
 	fmt.Println(user_name + " connected")
 	mu.Unlock()
+	
 
-	// go broadcast(conns, Online_users)
+	 
 
 	fmt.Println(user.Value + " connected")
 	// HistoryMessages := H.Service.GetHistory(user_id, to_id)
 
 	for {
-		messageType, Message, err := conns[user_id].ReadMessage()
+		messageType, Message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		mu.Lock()
-		data := Data_send{
-			Sender:  user_name,
-			Message: string(Message),
-			Date:    time.Now(),
-		}
-		datajson, err := json.Marshal(data)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		err = H.Service.Database.InsertChat(user_id, to_id, Message)
+		UnmarshalData := Data_send{}
+		json.Unmarshal(Message, &UnmarshalData)
+		fmt.Println(UnmarshalData)
+		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 		if err != nil {
 			fmt.Println(err)
 		}
 		mu.Unlock()
 		for k, value := range conns {
-			if k == to_id || k == user_id {
-				if err := value.WriteMessage(messageType, datajson); err != nil {
+			if value == UnmarshalData.To || value == user_id {
+				if err := k.WriteMessage(messageType, Message); err != nil {
 					log.Println(err)
 					return
 				}
@@ -131,13 +129,21 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func checkisincluded(list []int, id int) bool {
+	for _, value := range list {
+		if value == id {
+			return true
+		}
+	}
+	return false
+}
 func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
 		return
 	}
 	to := Message{
-		Message: "string",
+		User_name: "string",
 	}
 	user, err := r.Cookie("session_token")
 	if err != nil {
@@ -150,7 +156,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err to")
 		return
 	}
-	_, _, user_id, to_id, err := H.Service.Database.GetId(user.Value, to.Message)
+	user_id, to_id, err := H.Service.Database.GetId2(user.Value, to.User_name)
 	if err != nil {
 		utils.WriteJson(w, 500, "err looking for ids")
 		return
@@ -169,15 +175,17 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func broadcast(conns map[string]*websocket.Conn, data any) {
+func broadcast(conns map[*websocket.Conn]int, data any) {
+	
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	for _, conn := range conns {
-		if err = conn.WriteMessage(1, jsonData); err != nil {
+	fmt.Println("broadcasting",	data, jsonData)
+	for value, _ := range conns {
+		fmt.Println("broadcasting", value, jsonData)
+		if err = value.WriteMessage(1, jsonData); err != nil {
 			log.Println(err)
 			return
 		}

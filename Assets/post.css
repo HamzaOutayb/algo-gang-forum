@@ -344,14 +344,15 @@ button[type="submit"] {
     width: 80%;
     height: 80%;
     left: 50%;
-    right: 50%;
-    transform: translate(-50%,20%);
+    top: 50%;
+    transform: translate(-50%,-50%);
     background-color:rgba(95, 80, 80, 0.1);
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(86, 90, 93, 0.5);
     display: flex;
     flex-direction: column;
     padding: 20px;
+    z-index: 87986;
   }
 
   .chat-box {

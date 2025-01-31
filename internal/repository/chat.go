@@ -6,7 +6,7 @@ import (
 	"real-time-forum/internal/models"
 )
 
-func (Database *Database) InsertChat(From, To int, Message []byte) error {
+func (Database *Database) InsertChat(From, To int, Message string) error {
 	var Conversations_ID int64
 	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
 	if Conversations_ID == 0 {
@@ -19,7 +19,7 @@ func (Database *Database) InsertChat(From, To int, Message []byte) error {
 			return err
 		}
 	}
-	_, err := Database.Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, string(Message), Conversations_ID)
+	_, err := Database.Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, Message, Conversations_ID)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ type Data_send struct {
 
 type Messagesbody struct {
 	Sender  string
+	To      string
 	Message string
 	Date    string
 }
