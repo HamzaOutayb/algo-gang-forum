@@ -46,7 +46,7 @@ var (
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session_token")
 	if err != nil {
-		utils.WriteJson(w, http.StatusUnauthorized, "unothorized")
+		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 	receiver := r.URL.Query().Get("to")
@@ -57,10 +57,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 	user_name, _, user_id, receiver_id, err := H.Service.Database.GetId(user.Value, receiver)
 	if err != nil {
-		if err == sqlite3.ErrLocked {
-			http.Error(w, "data base locked", http.StatusLocked)
-			return
-		}
 		if err == sql.ErrNoRows {
 			utils.WriteJson(w, http.StatusBadRequest, "bad request")
 			return
@@ -76,19 +72,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
-	defer func() {
-		fmt.Println(user_name + " disconnected")
-		mu.Lock()
-		counter[user_id]--
-		if counter[user_id] == 0 {
-			HandleUserStatus(user_id, "offline")
-			delete(conns, user_id)
-		}
-		mu.Unlock()
-		conn.Close()
-	}()
-
 	mu.Lock()
 	conns[user_id] = conn
 	HandleUserStatus(user_id, "online")
@@ -100,9 +83,8 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUserStatus(userid int, status string) {
-	
 	for id, Conn := range conns {
-		if id != userid {
+		if id != userid && Conn != nil {
 			Conn.WriteJSON([]byte(status))
 		}
 	}
@@ -110,27 +92,33 @@ func HandleUserStatus(userid int, status string) {
 
 func readloop(sendername string, userid int, receiverid int, db *sql.DB) {
 	conn := conns[userid]
+	defer func() {
+		mu.Lock()
+		fmt.Println(sendername + " disconnected")
+		counter[userid]--
+		if counter[userid] == 0 {
+			HandleUserStatus(userid, "offline")
+			delete(conns, userid)
+		}
+		conn.Close()
+		mu.Unlock()
+	}()
 	for {
 		var data Data_send
 		err := conn.ReadJSON(&data)
 		if err != nil {
-			log.Println(err)
-			return
+			fmt.Println("err reading json:",err)
+			continue
 		}
 
 		mu.Lock()
 		data.Sender = sendername
 		data.Date = time.Now()
-
+		data.Type = "message"
 		mu.Unlock()
-
 		switch data.Type {
-		// message
 		case "message":
-			Handlemessages(data, userid, receiverid, db)
-			/*/ typing
-			handleTyping(userid, receiverid)
-			*/
+			go Handlemessages(data, userid, receiverid, db)
 		}
 	}
 }
@@ -142,13 +130,13 @@ func Handlemessages(data Data_send, userid int, receiverid int, Db *sql.DB) {
 		return
 	}
 
+	mu.Lock()
 	err = InsertChat(userid, receiverid, data.Message, Db)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	mu.Unlock()
+	defer mu.Unlock()
 	if receiverConn, ok := conns[receiverid]; ok {
 		err := receiverConn.WriteJSON(datajson)
 		if err != nil {
@@ -192,7 +180,8 @@ func InsertChat(From, To int, Message string, Db *sql.DB) error {
 }
 
 func (H *Handler) GethistoryHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	fmt.Println("test get his")
+	if r.Method != http.MethodPost {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
 		return
 	}

@@ -479,8 +479,6 @@ async  function  startchat() {
       };
 }
 
-
-
 async function CreatePost() {
   const title = document.querySelector('#title').value
   const content = document.querySelector('#content').value

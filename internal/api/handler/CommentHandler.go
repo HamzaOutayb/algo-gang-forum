@@ -13,7 +13,6 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-// CommentsResponse type => type that the GetCommentsHandler will return it
 type CommentsResponse struct {
 	Comments []models.ShowComment
 }
