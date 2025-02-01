@@ -20,6 +20,8 @@ func Routes(db *sql.DB) *http.ServeMux {
 	signupRateLimiter := ratelimiter.SignupLimiter.RateMiddlewareAuth(http.HandlerFunc(d.Signup), 5, time.Minute)
 	mux.Handle("/Signin", loginRateLimiter)
 	mux.Handle("/Signup", signupRateLimiter)
+	mux.HandleFunc("/Lougout", d.LougoutHandler)
+
 	mux.HandleFunc("/create_post", d.InsertPostsHandler)
 	mux.HandleFunc("GET /api/post/{id}", d.GetPostByIdHandler)
 	mux.HandleFunc("GET /api/post", d.GetPostHandler)

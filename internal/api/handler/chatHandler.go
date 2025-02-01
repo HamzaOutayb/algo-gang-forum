@@ -45,7 +45,6 @@ var (
 
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("chat service")
 	user, err := r.Cookie("session_token")
 	if err != nil {
 		
@@ -79,7 +78,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 
 	defer func() {
-		fmt.Println("closing connection")
 		fmt.Println(user_name + " disconnected")
 		mu.Lock()
 		delete(conns, conn)
@@ -92,7 +90,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	if !checkisincluded(data.list, user_id) {
 	data.list = append(data.list, user_id)
 	}
-	fmt.Println(data.list)
 	go broadcast(conns, data.list)
 	fmt.Println(user_name + " connected")
 	mu.Unlock()
@@ -101,7 +98,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	 
 
 	fmt.Println(user.Value + " connected")
-	// HistoryMessages := H.Service.GetHistory(user_id, to_id)
 
 	for {
 		messageType, Message, err := conn.ReadMessage()
@@ -112,7 +108,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		UnmarshalData := Data_send{}
 		json.Unmarshal(Message, &UnmarshalData)
-		fmt.Println(UnmarshalData)
 		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 		if err != nil {
 			fmt.Println(err)
@@ -142,12 +137,12 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
 		return
 	}
-	to := Message{
-		User_name: "string",
+	type Message struct{
+		User_name string `json:"message"`
 	}
+	var to Message
 	user, err := r.Cookie("session_token")
 	if err != nil {
-
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
@@ -156,6 +151,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err to")
 		return
 	}
+	fmt.Println(to.User_name,"ttttttttttttttttttttttttttttttttttttttttttttttttttt")
 	user_id, to_id, err := H.Service.Database.GetId2(user.Value, to.User_name)
 	if err != nil {
 		utils.WriteJson(w, 500, "err looking for ids")
@@ -183,8 +179,7 @@ func broadcast(conns map[*websocket.Conn]int, data any) {
 		return
 	}
 	fmt.Println("broadcasting",	data, jsonData)
-	for value, _ := range conns {
-		fmt.Println("broadcasting", value, jsonData)
+	for value := range conns {
 		if err = value.WriteMessage(1, jsonData); err != nil {
 			log.Println(err)
 			return

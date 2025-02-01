@@ -68,7 +68,6 @@ async function Login (Login_re,key_re) {
       errorMessage.innerHTML = errorData
     } else {
       GoToHomePage()
-     
     }
   
     // errorMessage.classList.add("errorMessage")
@@ -177,11 +176,12 @@ function GoToLoginPage() {
 }
 
 async function GoToHomePage() {
+  
   is_resize = false;
 done_resize = false;
-StartWs()
   document.body.innerHTML = ""
 
+  
 
   let header = document.createElement('header');
   header.classList.add('header');
@@ -354,7 +354,7 @@ async function GetAllPosts(page = 1) {
   document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
     GetSinglePost()
     InsertComment()
-    ChatBox()
+    StartWs()
     
     const width = window.innerWidth;
     if (width < 768) {
@@ -562,7 +562,7 @@ async function Likes_Comments() {
 }
 
 
- function ChatBox() {
+ function ChatBox(ws) {
   let users =  document.querySelectorAll("button.users")
   
   users.forEach(e => e.addEventListener("click", async () => {
@@ -587,6 +587,7 @@ async function Likes_Comments() {
       },
       body: JSON.stringify({ message: TO }) 
      }).then(response => response.json()).then(data => {
+      console.log(TO)
       if (data) {
        const chatbox = document.querySelector("#chatBox")
        data.forEach(e => {
@@ -611,7 +612,7 @@ async function Likes_Comments() {
         }
        })
       }
-      startchat()
+      startchat(ws)
       document.body.style.overflow = "hidden";
       document.querySelector(".X").addEventListener("click", () => {
         GoToHomePage()
@@ -624,7 +625,7 @@ async function Likes_Comments() {
 
 
 
-async  function  startchat() {
+async  function  startchat(ws) {
   const chatBox = document.getElementById('messageInput');
   const button = document.querySelector('.send-btn');
   button.addEventListener('click', () => {
@@ -659,17 +660,17 @@ async  function  startchat() {
 
 
 async function StartWs() {
-  var ws = new WebSocket(`ws://localhost:8080/chat`)
+  const ws = new WebSocket(`ws://localhost:8080/chat`)
   ws.onopen = () => {
     console.log('connected')
-  
-  ws.send = () => {
-    ws.send("test")
+   
+  ws.onmessage = (message) => {
+    console.log("as")
+    console.log(JSON.parse(message.data));
+    ChatBox(ws)
   }
-  ws.message = (message) => {
-    console.log(message)
-    // get slice user online
-
+  ws.onclose = () => {
+    console.log("5raj")
   }
 }
 }

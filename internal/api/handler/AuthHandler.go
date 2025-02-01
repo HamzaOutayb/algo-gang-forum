@@ -84,27 +84,27 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 		// Username
 		if err.Error() == models.Errors.InvalidUsername {
-						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		// Age
 		if err.Error() == models.UserErrors.InvalideAge {
-						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		// Password
 		if err.Error() == models.Errors.InvalidPassword {
-						utils.WriteJson(w, http.StatusBadRequest, err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 		// Email
 		if err.Error() == models.Errors.InvalidEmail {
-					utils.WriteJson(w, http.StatusBadRequest, err.Error())
+			utils.WriteJson(w, http.StatusBadRequest, err.Error())
 
 			return
 		}
@@ -121,4 +121,15 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJson(w, http.StatusOK, "You'v loged succesfuly")
+}
+
+func (H *Handler) LougoutHandler(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+	}
+	
+	utils.DeleteSessionCookie(w, user.Uuid)
+	utils.WriteJson(w, http.StatusOK, "You Logged Out Successfuly!")
 }
