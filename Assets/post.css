@@ -52,8 +52,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 2px 4px rgba(235, 85, 16, 0.1);
     margin-bottom: 1rem;
-    height: 40%; /* Relative height */
-    max-height: 40%; /* Maximum height */
+    height: 85%; /* Relative height */
     overflow-y: auto; /* Show scrollbar only when needed */
     scroll-behavior: smooth
 }

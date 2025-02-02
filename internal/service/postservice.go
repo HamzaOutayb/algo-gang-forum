@@ -103,6 +103,9 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 	if err != nil {
 		return nil, err
 	}
+	if total == 0 {
+		return []models.Post{}, nil
+	}
 	if num - 1 == (total/models.PostsPerPage) + (total % models.PostsPerPage) {
 		start = models.PostsPerPage % total
 	} else if num - 1 > (total/models.PostsPerPage) + (total % models.PostsPerPage) {

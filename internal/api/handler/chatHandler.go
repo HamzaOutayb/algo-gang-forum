@@ -34,30 +34,32 @@ type Data_send struct {
 	Message string `json:"message"`
 	Date    time.Time
 	To      int `json:"to"`
-	list    []int
+	Status    map[int]bool
 }
 
 var (
 	conns = make(map[*websocket.Conn]int)
 	mu    = &sync.Mutex{}
+	statusmap = make(map[int]bool)
 	data  Data_send
 )
 
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("chat")
 	user, err := r.Cookie("session_token")
 	if err != nil {
 		
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
-	
+	fmt.Println(user.Value)
 	if user.Value == "" {
 		
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	
+	fmt.Println("chat2")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		
@@ -74,40 +76,44 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		// err bad request theres no sender or no receiver
 		// err db is locked
 	}
-
+fmt.Println(user_name,user_id)
 
 
 	defer func() {
-		fmt.Println(user_name + " disconnected")
 		mu.Lock()
+		
+		statusmap[user_id] = false
+		logout := Data_send{
+			Status:    statusmap,
+		}
+		
+		go broadcast(conns, logout)
 		delete(conns, conn)
-		mu.Unlock()
 		conn.Close()
+		mu.Unlock()
+		fmt.Println(user_name + " disconnected")
 	}()
-
-	mu.Lock()
+		
+//	mu.Lock()
 	conns[conn] = user_id
-	if !checkisincluded(data.list, user_id) {
-	data.list = append(data.list, user_id)
-	}
-	go broadcast(conns, data.list)
-	fmt.Println(user_name + " connected")
-	mu.Unlock()
+	statusmap[user_id] = true
+		login := Data_send{
+			Status:    statusmap,
+		}
+	go broadcast(conns, login )
 	
-
-	 
-
-	fmt.Println(user.Value + " connected")
+//	mu.Unlock()
+	fmt.Println("chat3")
 
 	for {
-		messageType, Message, err := conn.ReadMessage()
+		var UnmarshalData Data_send
+	  err := conn.ReadJSON( &UnmarshalData)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		mu.Lock()
-		UnmarshalData := Data_send{}
-		json.Unmarshal(Message, &UnmarshalData)
+	fmt.Println("UnmarshalData", UnmarshalData)
 		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 		if err != nil {
 			fmt.Println(err)
@@ -115,7 +121,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		mu.Unlock()
 		for k, value := range conns {
 			if value == UnmarshalData.To || value == user_id {
-				if err := k.WriteMessage(messageType, Message); err != nil {
+				if err := k.WriteJSON(UnmarshalData); err != nil {
 					log.Println(err)
 					return
 				}
@@ -124,14 +130,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func checkisincluded(list []int, id int) bool {
-	for _, value := range list {
-		if value == id {
-			return true
-		}
-	}
-	return false
-}
+
 func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
@@ -151,7 +150,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err to")
 		return
 	}
-	fmt.Println(to.User_name,"ttttttttttttttttttttttttttttttttttttttttttttttttttt")
+fmt.Println("to", to.User_name )
 	user_id, to_id, err := H.Service.Database.GetId2(user.Value, to.User_name)
 	if err != nil {
 		utils.WriteJson(w, 500, "err looking for ids")
@@ -162,23 +161,18 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 500, "err history")
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(HistoryMessages)
-	if err != nil {
-		utils.WriteJson(w, 500, "err send")
-		return
-	}
+	
+	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 
 func broadcast(conns map[*websocket.Conn]int, data any) {
-	
+	fmt.Println("broadcast")
+	fmt.Println(data)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	fmt.Println("broadcasting",	data, jsonData)
 	for value := range conns {
 		if err = value.WriteMessage(1, jsonData); err != nil {
 			log.Println(err)

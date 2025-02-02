@@ -9,6 +9,7 @@ let nomoremessage = false;
 let nomoreusers = false;
 let nomoreconversations = false;
 var NofetchComment = false
+let Status_list
 
 
 let is_resize = false;
@@ -43,12 +44,17 @@ if (document.querySelector('#login_switch_button')){
 
 
 async function deleteCookie () {
-  // await fetch('/logout', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ session_token: document.cookie.split('=')[1] })
-  // })
-  document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
-  GoToLoginPage()
+  await fetch('/Lougout', {
+    method: 'POST',
+    body: JSON.stringify({ uid: document.cookie.split('=')[1] })
+  }).then(response => {
+    console.log(response.ok)
+   if(response.ok){
+     GoToLoginPage()
+    document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
+   }
+    response.json()
+  })
 }
 
 async function Login (Login_re,key_re) {
@@ -216,13 +222,12 @@ done_resize = false;
 
 ShowCreatePost()
 FetchChatWithConversations()
-FetchConversations()
  if (document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']")) {
   document.querySelector("link[rel='stylesheet'][href='/Assets/login.css']").href =  "/Assets/post.css"
 }
 
 GetAllPosts()
-  
+
 }
 Login_page()
 
@@ -285,26 +290,42 @@ async function FetchChatWithConversations() {
        let listaside = document.createElement('div')
        listaside.classList.add('listaside')
      e.forEach((data)=> {
-       listaside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
+       listaside.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
+       <p class="status"></p>
+       </button>`
      })
      aside.appendChild(listaside)
    }
    })
+   FetchConversations()
   }
 
 async function FetchConversations() {
-  await fetch("/Conversations/").then(response =>  response.json()).then(e => {
-    let aside = document.querySelector('.sidebar-left')
+  await fetch("/Conversations/").then(response =>  response.json()).then(async e => {
      if (e){
-      aside.innerHTML += `<h2>Conversations</h2>`
+   let s =  document.querySelector('.listaside')
+   await e.forEach((data)=> {
+    if (s){
+       console.log(data,s)
+      s.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
+      <p class="status"></p>
+      </button>`
+    }else {
+      console.log(data,s)
       let listaside = document.createElement('div')
-      listaside.classList.add('listaside')
-    e.forEach((data)=> {
-      listaside.innerHTML += `<button class="users" value="${data.id}">${data.nickname}</button>`
-     })
-     aside.appendChild(listaside)
-   }
+       listaside.classList.add('listaside')
+       listaside.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
+      <p class="status"></p>
+      </button>`
+      let aside = document.querySelector('.sidebar-left')
+      if (aside) {
+        aside.appendChild(listaside)
+      }
+      
+    }
    })
+   }})
+   StartWs()
 }
 
 
@@ -354,7 +375,7 @@ async function GetAllPosts(page = 1) {
   document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
     GetSinglePost()
     InsertComment()
-    StartWs()
+    
     
     const width = window.innerWidth;
     if (width < 768) {
@@ -566,12 +587,14 @@ async function Likes_Comments() {
   let users =  document.querySelectorAll("button.users")
   
   users.forEach(e => e.addEventListener("click", async () => {
-     var TO = e.innerHTML;
+     var TO = e.innerHTML.split("<")[0].trim();
+     var TO_id = e.value
+     console.log(TO,TO_id)
      
      document.querySelector("main").innerHTML += `
      <div class="chat-container">
      <button class="X">X</button>
-     <h3 id="TO">${TO}</h3>
+     <h3 id="TO" value="${TO_id}" >${TO}</h3>
    <div class="chat-box" id="chatBox">
    </div>
    <div class="input-area">
@@ -580,12 +603,14 @@ async function Likes_Comments() {
    </div>
  </div>
      `
+     const data = { message: TO, to: TO_id }
+     console.log(data)
      await fetch("/api/chathistory", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
       },
-      body: JSON.stringify({ message: TO }) 
+      body: JSON.stringify(data) 
      }).then(response => response.json()).then(data => {
       console.log(TO)
       if (data) {
@@ -626,17 +651,22 @@ async function Likes_Comments() {
 
 
 async  function  startchat(ws) {
+  var to =  document.querySelector("#TO").getAttribute("value");
   const chatBox = document.getElementById('messageInput');
   const button = document.querySelector('.send-btn');
+ console.log(typeof to)
+  const data = { message: to, to: parseInt(to) }
+  console.log(typeof data.to)
   button.addEventListener('click', () => {
-      ws.send(JSON.stringify({ message: chatBox.value, to: to }));
+    
+      ws.send(JSON.stringify(data));
       chatBox.value = '';
   });
 
   ws.onmessage = (message) => {
    const parsedMessage = JSON.parse(message.data);
    console.log(message)
-   if (message.Message) {
+   if (message.message) {
    const chatBox = document.getElementById('chatBox');
    if (message.Sender == to) {
     chatBox.innerHTML += ` <div class="Message_From">
@@ -660,21 +690,60 @@ async  function  startchat(ws) {
 
 
 async function StartWs() {
-  const ws = new WebSocket(`ws://localhost:8080/chat`)
+  const ws = new WebSocket('ws://localhost:8080/chat');
+
   ws.onopen = () => {
-    console.log('connected')
-   
+    console.log('Connected');
+  };
+
   ws.onmessage = (message) => {
-    console.log("as")
-    console.log(JSON.parse(message.data));
-    ChatBox(ws)
-  }
+    console.log('Received message:', message.data);
+
+    try {
+      const parsedData = JSON.parse(message.data);
+      if (parsedData.Status) {
+        Status(parsedData.Status)
+      } else {
+        console.log('No Status in message');
+      }
+      ChatBox(ws);
+    } catch (error) {
+      console.error('Error parsing message data:', error);
+    }
+  };
+
   ws.onclose = () => {
-    console.log("5raj")
-  }
-}
+    console.log('Connection closed');
+  };
+
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
 }
 
+
+
+function Status(data) {
+  console.log("status");
+  document.querySelectorAll('.users').forEach(e => {
+      
+    for (let key in data) {
+      if (e.value == key) {
+        if (data[key]) {
+          const statusElement = e.querySelector('.status');
+          if (statusElement) {
+            statusElement.innerHTML = 'online';
+          }
+        } else {
+          const statusElement = e.querySelector('.status');
+          if (statusElement) {
+            statusElement.innerHTML = 'offline';
+          }
+        }
+      }
+    }
+  });
+}
 
 
 async function CreatePost() {

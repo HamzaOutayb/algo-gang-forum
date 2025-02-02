@@ -129,7 +129,23 @@ func (H *Handler) LougoutHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 	}
-	
+	_,user_id, err := H.Service.Database.GetId(user.Uuid)
+	if err != nil {
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
+		return
+	}
 	utils.DeleteSessionCookie(w, user.Uuid)
+	fmt.Println("user_id", user_id)
+	fmt.Println("conns", conns)
+	for key, value := range conns {
+		if value == user_id {
+			fmt.Println("key", value)
+			delete(conns, key)
+			key.Close()
+			statusmap[user_id] = false
+		}
+		fmt.Println("key", value)
+	}
+	broadcast(conns, statusmap)
 	utils.WriteJson(w, http.StatusOK, "You Logged Out Successfuly!")
 }
