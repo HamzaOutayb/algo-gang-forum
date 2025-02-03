@@ -50,6 +50,8 @@ async function deleteCookie () {
   }).then(response => {
     console.log(response.ok)
    if(response.ok){
+         ws.close()
+
      GoToLoginPage()
     document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
    }
@@ -688,9 +690,9 @@ async  function  startchat(ws) {
 }
 }
 
-
+let ws
 async function StartWs() {
-  const ws = new WebSocket('ws://localhost:8080/chat');
+   ws = new WebSocket('ws://localhost:8080/chat');
 
   ws.onopen = () => {
     console.log('Connected');
