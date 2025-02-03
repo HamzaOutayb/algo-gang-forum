@@ -38,7 +38,7 @@ type Data_send struct {
 }
 
 var (
-	conns = make(map[*websocket.Conn]int)
+	conns = make(map[int][]*websocket.Conn)
 	mu    = &sync.Mutex{}
 	statusmap = make(map[int]bool)
 	data  Data_send
@@ -86,16 +86,16 @@ fmt.Println(user_name,user_id)
 		logout := Data_send{
 			Status:    statusmap,
 		}
-		
+		Indexconss := H.Service.LookingForIndexconns(conns[user_id],conn)
+		conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
 		go broadcast(conns, logout)
-		delete(conns, conn)
 		conn.Close()
 		mu.Unlock()
 		fmt.Println(user_name + " disconnected")
 	}()
 		
 //	mu.Lock()
-	conns[conn] = user_id
+	conns[user_id] = append(conns[user_id], conn)
 	statusmap[user_id] = true
 		login := Data_send{
 			Status:    statusmap,
@@ -113,23 +113,26 @@ fmt.Println(user_name,user_id)
 			return
 		}
 		mu.Lock()
-	fmt.Println("UnmarshalData", UnmarshalData)
+		fmt.Println("UnmarshalData", UnmarshalData)
 		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 		if err != nil {
 			fmt.Println(err)
 		}
 		mu.Unlock()
-		for k, value := range conns {
-			if value == UnmarshalData.To || value == user_id {
-				if err := k.WriteJSON(UnmarshalData); err != nil {
+		for _, value := range conns[user_id] {
+				if err := value.WriteJSON(UnmarshalData); err != nil {
 					log.Println(err)
 					return
 				}
-			}
+		}
+		for _, value := range conns[user_id] {
+				if err := value.WriteJSON(UnmarshalData); err != nil {
+					log.Println(err)
+					return
+				}
 		}
 	}
 }
-
 
 func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -165,7 +168,7 @@ fmt.Println("to", to.User_name )
 	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 
-func broadcast(conns map[*websocket.Conn]int, data any) {
+func broadcast(conns map[int][]*websocket.Conn, data any) {
 	fmt.Println("broadcast")
 	fmt.Println(data)
 	jsonData, err := json.Marshal(data)
@@ -173,10 +176,12 @@ func broadcast(conns map[*websocket.Conn]int, data any) {
 		log.Println(err)
 		return
 	}
-	for value := range conns {
-		if err = value.WriteMessage(1, jsonData); err != nil {
+	for key,_ := range conns {
+		for _,value := range conns[key]{
+			if err = value.WriteMessage(1, jsonData); err != nil {
 			log.Println(err)
 			return
+		}
 		}
 	}
 }
