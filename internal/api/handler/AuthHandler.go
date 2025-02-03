@@ -135,17 +135,10 @@ func (H *Handler) LougoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.DeleteSessionCookie(w, user.Uuid)
-	fmt.Println("user_id", user_id)
-	fmt.Println("conns", conns)
-	for key, value := range conns {
-		if value == user_id {
-			fmt.Println("key", value)
-			delete(conns, key)
-			key.Close()
-			statusmap[user_id] = false
-		}
-		fmt.Println("key", value)
-	}
+	mu.Lock()
+	statusmap[user_id] = false	
+	mu.Unlock()
 	broadcast(conns, statusmap)
+	fmt.Println("test")
 	utils.WriteJson(w, http.StatusOK, "You Logged Out Successfuly!")
 }
