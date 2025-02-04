@@ -11,6 +11,8 @@ let nomoreconversations = false;
 var NofetchComment = false
 let Status_list
 
+let inchat = false
+
 
 let is_resize = false;
     let done_resize = false;
@@ -196,7 +198,6 @@ done_resize = false;
   header.innerHTML = `
       <div class="header-content">
           <h3 class="logo">ALGO GANG</h3>
-
           <div class="logout-container">
               <button class="logout-button" onclick="deleteCookie()">
                   <i class="fas fa-sign-out-alt"></i> Logout
@@ -206,7 +207,6 @@ done_resize = false;
                   </button>
           </div>
           </div>
-
   `
 
   document.body.appendChild(header)
@@ -591,7 +591,6 @@ async function Likes_Comments() {
   users.forEach(e => e.addEventListener("click", async () => {
      var TO = e.innerHTML.split("<")[0].trim();
      var TO_id = e.value
-     console.log(TO,TO_id)
      
      document.querySelector("main").innerHTML += `
      <div class="chat-container">
@@ -618,30 +617,20 @@ async function Likes_Comments() {
       if (data) {
        const chatbox = document.querySelector("#chatBox")
        data.forEach(e => {
-        if (e.Sender == TO) {
           chatbox.innerHTML += `
-
-          <div class="Message_TO">
+          <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
           <h4 >${e.Sender}</h4>
             <span>${e.Content}</span>
           <h6>${e.Created_at}</h6>
           </div></br>
           `
-        }else{
-          chatbox.innerHTML += `
-          <div class="Message_From">
-         <h4>${e.Sender}</h4>
-
-            <span>${e.Content}</span>
-          <h6>${e.Created_at}</h6>
-          </div></br>
-          `
-        }
        })
       }
       startchat(ws)
       document.body.style.overflow = "hidden";
       document.querySelector(".X").addEventListener("click", () => {
+        inchat = false
+        chatid = 0
         GoToHomePage()
         document.body.style.overflow = "auto"; ;
       })
@@ -653,39 +642,34 @@ async function Likes_Comments() {
 
 
 async  function  startchat(ws) {
-  var to =  document.querySelector("#TO").getAttribute("value");
+  console.log("startchat")
+ inchat = true
+ const to =  document.querySelector("#TO").getAttribute("value");
+  const TO_id =  document.querySelector("#TO").innerHTML;
   const chatBox = document.getElementById('messageInput');
   const button = document.querySelector('.send-btn');
- console.log(typeof to)
-  const data = { message: to, to: parseInt(to) }
-  console.log(typeof data.to)
+  
   button.addEventListener('click', () => {
     
-      ws.send(JSON.stringify(data));
+      ws.send(JSON.stringify({ message: chatBox.value, to: parseInt(to) }));
       chatBox.value = '';
   });
 
   ws.onmessage = (message) => {
    const parsedMessage = JSON.parse(message.data);
-   console.log(message)
-   if (message.message) {
+   
+   if (parsedMessage.Status == null) {
+    console.log(parsedMessage.sender,TO_id,parsedMessage.to,to);
+    if (parsedMessage.to == to || parsedMessage.sender == TO_id) {
    const chatBox = document.getElementById('chatBox');
-   if (message.Sender == to) {
-    chatBox.innerHTML += ` <div class="Message_From">
-          <h4 >${parsedMessage.Sender}</h4>
-            <span>${parsedMessage.Message}</span>
+    chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO"  :"Message_From"}>
+          <h4 >${parsedMessage.sender}</h4>
+            <span>${parsedMessage.message}</span>
           <h6>${parsedMessage.Date}</h6>
           </div></br>`;
-   }else {
-      chatBox.innerHTML += `
-          <div class="Message_TO">
-         <h4>${parsedMessage.Sender}</h4>
-            <span>${parsedMessage.Message}</span>
-          <h6>${parsedMessage.Date}</h6>
-          </div></br>`;
-    }
-  }else {
-    console.log(message)
+   } else {
+     alert("New message")
+   }
   }
 }
 }
@@ -705,9 +689,12 @@ async function StartWs() {
       const parsedData = JSON.parse(message.data);
       if (parsedData.Status) {
         Status(parsedData.Status)
-      } else {
-        console.log('No Status in message');
+      } else if (parsedData.message) {
+        if (!inchat) {
+          alert(parsedData.message+parsedData.sender)
+        }
       }
+      
       ChatBox(ws);
     } catch (error) {
       console.error('Error parsing message data:', error);

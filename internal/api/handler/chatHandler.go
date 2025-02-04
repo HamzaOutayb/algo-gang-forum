@@ -46,20 +46,20 @@ var (
 
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("chat")
+	
 	user, err := r.Cookie("session_token")
 	if err != nil {
 		
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
-	fmt.Println(user.Value)
+
 	if user.Value == "" {
 		
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("chat2")
+	
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		
@@ -76,7 +76,6 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		// err bad request theres no sender or no receiver
 		// err db is locked
 	}
-fmt.Println(user_name,user_id)
 
 
 	defer func() {
@@ -103,7 +102,6 @@ fmt.Println(user_name,user_id)
 	go broadcast(conns, login )
 	
 //	mu.Unlock()
-	fmt.Println("chat3")
 
 	for {
 		var UnmarshalData Data_send
@@ -113,19 +111,21 @@ fmt.Println(user_name,user_id)
 			return
 		}
 		mu.Lock()
-		fmt.Println("UnmarshalData", UnmarshalData)
 		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 		if err != nil {
 			fmt.Println(err)
 		}
+		UnmarshalData.Sender = user_name
 		mu.Unlock()
 		for _, value := range conns[user_id] {
+			fmt.Println("value")
 				if err := value.WriteJSON(UnmarshalData); err != nil {
 					log.Println(err)
 					return
 				}
 		}
-		for _, value := range conns[user_id] {
+		for _, value := range conns[UnmarshalData.To] {
+			fmt.Println("value2")
 				if err := value.WriteJSON(UnmarshalData); err != nil {
 					log.Println(err)
 					return
