@@ -2,8 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"net/http"
-	"text/template"
 
 	"real-time-forum/internal/repository"
 	"real-time-forum/internal/service"
@@ -27,6 +25,7 @@ func NewHandler(db *sql.DB) *Handler {
 	}
 }
 
+/*
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("Assets/index.html")
 	if err != nil {
@@ -35,3 +34,4 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	t.Execute(w, nil)
 }
+*/
