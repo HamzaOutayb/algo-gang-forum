@@ -318,6 +318,17 @@ button[type="submit"] {
     display: inline-block;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+.typing-indicator {
+    color: #ffffff;
+}
+
+.typing-indicator img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    transform: translate(0, 10px);
+}
 
 
 .content-spacer {
@@ -352,6 +363,18 @@ button[type="submit"] {
     flex-direction: column;
     padding: 20px;
     z-index: 87986;
+  }
+
+  .NOTIFICATION {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
   }
 
   .chat-box {

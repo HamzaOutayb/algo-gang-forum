@@ -10,18 +10,20 @@ let nomoreusers = false;
 let nomoreconversations = false;
 var NofetchComment = false
 let Status_list
-
+let idtime
 let inchat = false
-
+/*fetch('/api/checkuser').then(response => response.json()).then(data => {
+  if (!data) {
+    GoToLoginPage()
+  }
+})*/
 
 let is_resize = false;
-    let done_resize = false;
-
+let done_resize = false;
 if (document.cookie) {
   GoToHomePage()
-} else {
-  GoToLoginPage()
 }
+
 
 function Login_page(){
 if ( document.querySelector('#register-button')){
@@ -45,7 +47,7 @@ if (document.querySelector('#login_switch_button')){
 }
 
 
-async function deleteCookie () {
+async function deleteCookie() {
   await fetch('/Lougout', {
     method: 'POST',
     body: JSON.stringify({ uid: document.cookie.split('=')[1] })
@@ -113,6 +115,14 @@ async function Register () {
 
 
 
+
+function Listeners() {
+  showAllComments()
+  ShowCreatePost()
+  InsertComment()
+  Likes_Posts()
+  CreatePost()
+}
 
 
 
@@ -591,19 +601,24 @@ async function Likes_Comments() {
   users.forEach(e => e.addEventListener("click", async () => {
      var TO = e.innerHTML.split("<")[0].trim();
      var TO_id = e.value
-     
+     if (!document.querySelector(".chat-container")) {
      document.querySelector("main").innerHTML += `
      <div class="chat-container">
      <button class="X">X</button>
      <h3 id="TO" value="${TO_id}" >${TO}</h3>
+     
    <div class="chat-box" id="chatBox">
+   
    </div>
+   
    <div class="input-area">
      <input type="text " id="messageInput" class="message-input" placeholder="Type your message...">
      <button class="send-btn">Send</button>
    </div>
+   <span class="typing-indicator"></span>
  </div>
      `
+     }
      const data = { message: TO, to: TO_id }
      console.log(data)
      await fetch("/api/chathistory", {
@@ -630,8 +645,8 @@ async function Likes_Comments() {
       document.body.style.overflow = "hidden";
       document.querySelector(".X").addEventListener("click", () => {
         inchat = false
-        chatid = 0
-        GoToHomePage()
+        document.querySelector(".chat-container").remove()
+        Listeners()
         document.body.style.overflow = "auto"; ;
       })
      })
@@ -642,33 +657,53 @@ async function Likes_Comments() {
 
 
 async  function  startchat(ws) {
-  console.log("startchat")
  inchat = true
  const to =  document.querySelector("#TO").getAttribute("value");
   const TO_id =  document.querySelector("#TO").innerHTML;
   const chatBox = document.getElementById('messageInput');
-  const button = document.querySelector('.send-btn');
-  
-  button.addEventListener('click', () => {
-    
+  chatBox.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
       ws.send(JSON.stringify({ message: chatBox.value, to: parseInt(to) }));
       chatBox.value = '';
-  });
+    } else {
+      ws.send(JSON.stringify({ istyping: true, to: parseInt(to) }));
+    }
+  })
 
   ws.onmessage = (message) => {
    const parsedMessage = JSON.parse(message.data);
    
    if (parsedMessage.Status == null) {
-    console.log(parsedMessage.sender,TO_id,parsedMessage.to,to);
-    if (parsedMessage.to == to || parsedMessage.sender == TO_id) {
+    
+    if ((parsedMessage.to == to || parsedMessage.sender == TO_id) && parsedMessage.message) {
    const chatBox = document.getElementById('chatBox');
     chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO"  :"Message_From"}>
           <h4 >${parsedMessage.sender}</h4>
             <span>${parsedMessage.message}</span>
           <h6>${parsedMessage.Date}</h6>
           </div></br>`;
-   } else {
-     alert("New message")
+   }else if (parsedMessage.istyping === true) {
+    if (TO_id == parsedMessage.sender) {
+      console.log(parsedMessage)
+    typing = document.querySelector(".typing-indicator")
+    if (typing) {
+      if (idtime) {
+        clearTimeout(idtime)
+      }
+      typing .innerHTML = `${parsedMessage.sender}  is typing<img src="Assets/JVX7.gif" alt="loding"> `
+      idtime = setTimeout(() => {
+        typing .innerHTML = ``
+      },1500)
+    }
+   
+  }
+    }else {
+     document.body.innerHTML += `<div class="NOTIFICATION">
+     <h4 >NEW MESSAGE FROM ${parsedMessage.sender}</h4>
+     </div>`
+     setTimeout(() => {
+      document.querySelector(".NOTIFICATION").remove()
+     },1500)
    }
   }
 }
@@ -691,7 +726,12 @@ async function StartWs() {
         Status(parsedData.Status)
       } else if (parsedData.message) {
         if (!inchat) {
-          alert(parsedData.message+parsedData.sender)
+          document.querySelector("main").innerHTML += `<div class="NOTIFICATION">
+     <h4 >NEW MESSAGE FROM ${parsedData.sender}</h4>
+     </div>`
+     setTimeout(() => {
+      document.querySelector(".NOTIFICATION").remove()
+     },1500)
         }
       }
       

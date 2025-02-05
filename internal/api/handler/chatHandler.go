@@ -35,6 +35,7 @@ type Data_send struct {
 	Date    time.Time
 	To      int `json:"to"`
 	Status    map[int]bool
+	IsTyping bool `json:"istyping"`
 }
 
 var (
@@ -111,12 +112,15 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		mu.Lock()
-		err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
-		if err != nil {
-			fmt.Println(err)
+		if !UnmarshalData.IsTyping {
+			err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 		UnmarshalData.Sender = user_name
 		mu.Unlock()
+		
 		for _, value := range conns[user_id] {
 			fmt.Println("value")
 				if err := value.WriteJSON(UnmarshalData); err != nil {
@@ -131,6 +135,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 		}
+	
 	}
 }
 
