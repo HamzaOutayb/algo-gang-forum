@@ -23,7 +23,7 @@ func (database *Database) GetCommentsFrom(from, postId, userId int) ([]models.Sh
 		WHERE post_id = ? ORDER BY comment_date DESC LIMIT ? OFFSET ?`,
 		postId, CommentsPerPage, from)
 	if err != nil {
-		return nil, err
+		return []models.ShowComment{}, err
 	}
 
 	var comments []models.ShowComment
@@ -34,5 +34,5 @@ func (database *Database) GetCommentsFrom(from, postId, userId int) ([]models.Sh
 		comments = append(comments, comment)
 	}
 
-	return comments, err
+	return comments, nil
 }

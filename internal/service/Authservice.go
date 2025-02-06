@@ -138,4 +138,13 @@ func CheckAgeValidation(age string) bool {
 	}
 
 	return true
+
+}
+func (s *Service) GetInfoData(userUID string) (bool, error) {
+	// Get username and user id
+	id,_ := s.Database.GetUser(userUID)
+	// if id = 0 that means the user doesn't exist
+	var authorized =  id != 0
+
+	return authorized, nil
 }

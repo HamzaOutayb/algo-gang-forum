@@ -37,6 +37,8 @@ func Routes(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("/ChatWithConversations/", d.Lastconversation)
 	mux.HandleFunc("/Conversations/", d.Conversations)
 
+	mux.HandleFunc("/api/checkuser", d.InfoHandler)
+
 	go func() {
 		for {
 			time.Sleep(120 * time.Minute)

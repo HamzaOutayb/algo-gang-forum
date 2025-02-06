@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -84,7 +85,7 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != http.ErrNoCookie {
 		id, _ = h.Service.Database.GetUser(cookie.Value)
 	}
-	
+
 	// Get Comments
 	comments, err := h.Service.GetComments(postId, pageNumber, id)
 	if err != nil {
@@ -96,6 +97,8 @@ func (h *Handler) GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
 			// Send Empty Array of Comments To the user
 			utils.WriteJson(w, http.StatusOK, comments)
 			return
+		case sql.ErrNoRows.Error():
+			utils.WriteJson(w, http.StatusOK, comments)
 		default:
 			log.Printf("Unexpected Error when we get comment %s", err.Error())
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

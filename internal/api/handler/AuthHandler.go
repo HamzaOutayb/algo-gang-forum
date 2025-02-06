@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"real-time-forum/internal/models"
 	utils "real-time-forum/pkg"
@@ -129,16 +130,48 @@ func (H *Handler) LougoutHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 	}
-	_,user_id, err := H.Service.Database.GetId(user.Uuid)
+	_, user_id, err := H.Service.Database.GetId(user.Uuid)
 	if err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
 	utils.DeleteSessionCookie(w, user.Uuid)
 	mu.Lock()
-	statusmap[user_id] = false	
+	statusmap[user_id] = false
 	mu.Unlock()
 	broadcast(conns, statusmap)
 	fmt.Println("test")
 	utils.WriteJson(w, http.StatusOK, "You Logged Out Successfuly!")
+}
+
+func (H *Handler) InfoHandler(w http.ResponseWriter, r *http.Request) {
+	var Authorized bool
+	// parse user uid
+	uid := ""
+	userUID, errCookie := r.Cookie("session_token")
+	if errCookie == nil {
+		uid = userUID.Value
+	}
+
+	// Get Info Data
+	Authorized, err := H.Service.GetInfoData(uid)
+	if err != nil {
+		if err == sqlite3.ErrLocked {
+			utils.WriteJson(w, http.StatusLocked, struct {
+				Message string `json:"message"`
+			}{Message: "Database Locked"})
+			return
+		}
+
+		utils.WriteJson(w, http.StatusInternalServerError, struct {
+			Message string `json:"message"`
+		}{Message: "Internal Server Error"})
+		return
+	}
+	if errCookie == nil && !H.Service.Database.CheckExpiredCookie(userUID.Value, time.Now()) {
+		Authorized = false
+		utils.DeleteSessionCookie(w, userUID.Value)
+	}
+
+	utils.WriteJson(w, http.StatusOK, Authorized)
 }

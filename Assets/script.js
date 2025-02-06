@@ -12,11 +12,13 @@ var NofetchComment = false
 let Status_list
 let idtime
 let inchat = false
-/*fetch('/api/checkuser').then(response => response.json()).then(data => {
+fetch('/api/checkuser').then(response => response.json()).then(data => {
+  console.log(data);
+  
   if (!data) {
     GoToLoginPage()
   }
-})*/
+})
 
 let is_resize = false;
 let done_resize = false;
@@ -802,9 +804,9 @@ async function CreatePost() {
 
  function Likes_Posts() {
   document.querySelectorAll('.like-post-btn').forEach(e => e.addEventListener('click', async (e) => {
-    
+    const currentTarget = e.currentTarget
+
     const id =  await e.target.closest('.post-item').getAttribute('data-post-id');
-    
     const data = { thread_type: 'post', thread_id: parseInt(id), react: 1 }
     let response = await fetch('/api/reaction', {
       method: 'POST',
@@ -812,15 +814,16 @@ async function CreatePost() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-      })
+    })
       response = await response.json()
       const dislikeButton = await e.target.closest('.post-item').querySelector('button.dislike-post-btn')
+      
        if (response.isliked){
-          e.target.classList.add("like-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+          currentTarget.classList.add("like-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }else {
-          e.target.classList.remove("like-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+          currentTarget.classList.remove("like-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }
         if (response.isdisliked){
           dislikeButton.classList.add("dislike-reacted")
@@ -833,9 +836,9 @@ async function CreatePost() {
     
     }))
     document.querySelectorAll('.dislike-post-btn').forEach(e => e.addEventListener('click', async (e) => {
-     
-      const id = await e.target.closest('.post-item').getAttribute('data-post-id');
-      
+      const currentTarget = e.currentTarget
+
+      const id = await e.target.closest('.post-item').getAttribute('data-post-id'); 
       const data = { thread_type: 'post', thread_id: parseInt(id), react: 2 }
       let response = await fetch('/api/reaction', {
         method: 'POST',
@@ -855,11 +858,11 @@ async function CreatePost() {
           likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }
         if (response.isdisliked){
-          e.target.classList.add("dislike-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+          currentTarget.classList.add("dislike-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
         }else {
-           e.target.classList.remove("dislike-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+           currentTarget.classList.remove("dislike-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
         }
 
       }))

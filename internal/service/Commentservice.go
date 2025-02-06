@@ -8,15 +8,16 @@ import (
 	"real-time-forum/internal/models"
 )
 
-const CommentsPerPage = 15
+const CommentsPerPage = 8
 
 func (s *Service) GetComments(postId, page, userId int) ([]models.ShowComment, error) {
 	// Validate page number
-	if page < 0 {
+	if page < 1 {
 		return nil, errors.New(models.CommentErrors.InvalidPage)
 	}
 
 	// Transfer "page" to "from" (page 1 mean page one that has 100 comment from 1 mean comment 1)
+
 	from := (CommentsPerPage * page) - CommentsPerPage
 
 	// Get the comments count number to check if the page number is right
@@ -25,11 +26,10 @@ func (s *Service) GetComments(postId, page, userId int) ([]models.ShowComment, e
 		return nil, err
 	}
 
-	if page-1 == (commentsCount/models.PostsPerPage)+(commentsCount%models.PostsPerPage) {
-		from = models.PostsPerPage % commentsCount
-	} else if page-1 > (commentsCount/models.PostsPerPage)+(commentsCount%models.PostsPerPage) {
-		return []models.ShowComment{}, nil
+	if from >= commentsCount {
+		return nil, errors.New(models.CommentErrors.InvalidPage)
 	}
+
 	// Get comments
 	return s.Database.GetCommentsFrom(from, postId, userId)
 }
