@@ -603,6 +603,7 @@ async function Likes_Comments() {
   users.forEach(e => e.addEventListener("click", async () => {
      var TO = e.innerHTML.split("<")[0].trim();
      var TO_id = e.value
+     let page = 1
      if (!document.querySelector(".chat-container")) {
      document.querySelector("main").innerHTML += `
      <div class="chat-container">
@@ -622,8 +623,7 @@ async function Likes_Comments() {
      `
      }
      const data = { message: TO, to: TO_id }
-     console.log(data)
-     await fetch("/api/chathistory/1", {
+     await fetch(`/api/chathistory/${page}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -642,6 +642,36 @@ async function Likes_Comments() {
           </div></br>
           `
        })
+       chatbox.scrollTop = chatbox.scrollHeight
+       chatbox.addEventListener("scroll", () => {
+        let scrollHeight = chatbox.scrollHeight
+        if (chatbox.scrollTop == 0) {
+          const data = { message: TO, to: TO_id }
+          fetch(`/api/chathistory/${++page}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data) 
+         }).then(response => response.json()).then(data => {
+          console.log(TO)
+          if (data) {
+           const chatbox = document.querySelector("#chatBox")
+            data.forEach(e => {
+              chatbox.innerHTML = `
+              <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
+              <h4 >${e.Sender}</h4>
+                <span>${e.Content}</span>
+              <h6>${e.Created_at}</h6>
+              </div></br>
+              `+chatbox.innerHTML
+           })
+           chatbox.scrollTop = chatbox.scrollHeight-scrollHeight
+          }
+         }  )
+        }
+       })
+
       }
       startchat(ws)
       document.body.style.overflow = "hidden";
