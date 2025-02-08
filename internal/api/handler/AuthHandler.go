@@ -26,7 +26,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 	err := H.Service.LoginUser(&user)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
-			http.Error(w, "Database Is Busy!", http.StatusLocked)
+			utils.WriteJson(w, http.StatusLocked, "Database Is Busy!")
 			return
 		}
 		// Email
@@ -46,18 +46,16 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		}
 		// General: User Doesn't Exist
 		if err.Error() == models.Errors.InvalidCredentials {
-			fmt.Println("1", err.Error())
 			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidCredentials)
 			return
 		}
 
 		if err == sql.ErrNoRows {
-			fmt.Println("2", err.Error())
 			utils.WriteJson(w, http.StatusBadRequest, models.Errors.InvalidCredentials)
 			return
 		}
 
-		http.Error(w, "Error While logging To An  Account.", http.StatusInternalServerError)
+		utils.WriteJson(w, http.StatusInternalServerError,"Error While logging To An  Account.")
 		return
 	}
 

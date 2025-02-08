@@ -30,47 +30,44 @@ type Message struct {
 }
 
 type Data_send struct {
-	Sender  string `json:"sender"`
-	Message string `json:"message"`
-	Date    time.Time
-	To      int `json:"to"`
-	Status    map[int]bool
+	Sender   string `json:"sender"`
+	Message  string `json:"message"`
+	Date     time.Time
+	To       int `json:"to"`
+	Status   map[int]bool
 	IsTyping bool `json:"istyping"`
 }
 
 var (
-	conns = make(map[int][]*websocket.Conn)
-	mu    = &sync.Mutex{}
+	conns     = make(map[int][]*websocket.Conn)
+	mu        = &sync.Mutex{}
 	statusmap = make(map[int]bool)
-	data  Data_send
+	data      Data_send
 )
 
-
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
-	
 	user, err := r.Cookie("session_token")
 	if err != nil {
-		
+
 		utils.WriteJson(w, 500, "no cookies")
 		return
 	}
 
 	if user.Value == "" {
-		
+
 		http.Error(w, "User not specified", http.StatusBadRequest)
 		return
 	}
-	
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		
+
 		log.Println(err)
 		return
 	}
-	
-	user_name,user_id, err := H.Service.Database.GetId(user.Value)
+
+	user_name, user_id, err := H.Service.Database.GetId(user.Value)
 	if err != nil {
-		
 		if err == sqlite3.ErrLocked {
 			http.Error(w, "data base locked", http.StatusLocked)
 		}
@@ -78,35 +75,34 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		// err db is locked
 	}
 
-
 	defer func() {
 		mu.Lock()
-		
+
 		statusmap[user_id] = false
 		logout := Data_send{
-			Status:    statusmap,
+			Status: statusmap,
 		}
-		Indexconss := H.Service.LookingForIndexconns(conns[user_id],conn)
+		Indexconss := H.Service.LookingForIndexconns(conns[user_id], conn)
 		conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
 		go broadcast(conns, logout)
 		conn.Close()
 		mu.Unlock()
 		fmt.Println(user_name + " disconnected")
 	}()
-		
-//	mu.Lock()
+
+	//	mu.Lock()
 	conns[user_id] = append(conns[user_id], conn)
 	statusmap[user_id] = true
-		login := Data_send{
-			Status:    statusmap,
-		}
-	go broadcast(conns, login )
-	
-//	mu.Unlock()
+	login := Data_send{
+		Status: statusmap,
+	}
+	go broadcast(conns, login)
+
+	//	mu.Unlock()
 
 	for {
 		var UnmarshalData Data_send
-	  err := conn.ReadJSON( &UnmarshalData)
+		err := conn.ReadJSON(&UnmarshalData)
 		if err != nil {
 			log.Println(err)
 			return
@@ -120,22 +116,20 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		}
 		UnmarshalData.Sender = user_name
 		mu.Unlock()
-		
+
 		for _, value := range conns[user_id] {
-			fmt.Println("value")
-				if err := value.WriteJSON(UnmarshalData); err != nil {
-					log.Println(err)
-					return
-				}
+			if err := value.WriteJSON(UnmarshalData); err != nil {
+				log.Println(err)
+				return
+			}
 		}
 		for _, value := range conns[UnmarshalData.To] {
-			fmt.Println("value2")
-				if err := value.WriteJSON(UnmarshalData); err != nil {
-					log.Println(err)
-					return
-				}
+			if err := value.WriteJSON(UnmarshalData); err != nil {
+				log.Println(err)
+				return
+			}
 		}
-	
+
 	}
 }
 
@@ -144,49 +138,58 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusMethodNotAllowed, "MethodNotAllowed")
 		return
 	}
-	type Message struct{
+
+	type Message struct {
 		User_name string `json:"message"`
 	}
+
 	var to Message
-	user, err := r.Cookie("session_token")
+
+	pagenm, err := strconv.Atoi(r.PathValue("chatpage"))
 	if err != nil {
-		utils.WriteJson(w, 500, "no cookies")
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
+
+	user, err := r.Cookie("session_token")
+	if err != nil || !H.Service.Database.CheckExpiredCookie(user.Value, time.Now()) {
+		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
 	err = json.NewDecoder(r.Body).Decode(&to)
 	if err != nil {
-		utils.WriteJson(w, 500, "err to")
-		return
-	}
-fmt.Println("to", to.User_name )
-	user_id, to_id, err := H.Service.Database.GetId2(user.Value, to.User_name)
-	if err != nil {
-		utils.WriteJson(w, 500, "err looking for ids")
-		return
-	}
-	HistoryMessages, err := H.Service.Database.HistoryMessages(user_id, to_id)
-	if err != nil {
-		utils.WriteJson(w, 500, "err history")
+		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
 	
+	HistoryMessages, err := H.Service.GetHistory(user.Value, to.User_name, pagenm)
+	if err != nil {
+		switch err.Error() {
+		case sql.ErrNoRows.Error():
+			utils.WriteJson(w, http.StatusOK, HistoryMessages)
+			return
+		case sqlite3.ErrLocked.Error():
+			utils.WriteJson(w, http.StatusLocked, HistoryMessages)
+			return
+		}
+	}
+
 	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 
 func broadcast(conns map[int][]*websocket.Conn, data any) {
-	fmt.Println("broadcast")
-	fmt.Println(data)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	for key,_ := range conns {
-		for _,value := range conns[key]{
+	for key := range conns {
+		for _, value := range conns[key] {
 			if err = value.WriteMessage(1, jsonData); err != nil {
-			log.Println(err)
-			return
-		}
+				log.Println(err)
+				return
+			}
 		}
 	}
 }

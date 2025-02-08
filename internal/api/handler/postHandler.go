@@ -15,7 +15,6 @@ import (
 )
 
 func (H *Handler) InsertPostsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("test")
 	cookie, err := r.Cookie("session_token")
 	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		utils.WriteJson(w, http.StatusUnauthorized, struct {

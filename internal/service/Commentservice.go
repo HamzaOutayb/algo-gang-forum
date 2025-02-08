@@ -13,7 +13,7 @@ const CommentsPerPage = 8
 func (s *Service) GetComments(postId, page, userId int) ([]models.ShowComment, error) {
 	// Validate page number
 	if page < 1 {
-		return nil, errors.New(models.CommentErrors.InvalidPage)
+		return []models.ShowComment{}, errors.New(models.CommentErrors.InvalidPage)
 	}
 
 	// Transfer "page" to "from" (page 1 mean page one that has 100 comment from 1 mean comment 1)

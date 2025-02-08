@@ -27,7 +27,6 @@ func main() {
 	}
 
 	fmt.Println("http://localhost:8080/")
-
 	err = server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Error in starting of server:", err)

@@ -623,7 +623,7 @@ async function Likes_Comments() {
      }
      const data = { message: TO, to: TO_id }
      console.log(data)
-     await fetch("/api/chathistory", {
+     await fetch("/api/chathistory/1", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

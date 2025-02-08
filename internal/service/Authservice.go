@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"net/mail"
 	"strconv"
@@ -12,15 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
- func (s *Service) LoginUser(user *models.User) error {
-	// email
-	(*user).Email = strings.ToLower((*user).Email)
-	if !EmailChecker((*user).Email) {
-		return errors.New(models.Errors.InvalidEmail)
-	}
-	if len((*user).Email) > 50 {
-		return errors.New(models.Errors.LongEmail)
-	}
+
+func (s *Service) LoginUser(user *models.User) error {
 	// Password
 	if len((*user).Password) < 6 || len((*user).Password) > 30 {
 		return errors.New(models.Errors.InvalidPassword)
@@ -29,9 +23,11 @@ import (
 	if !s.Database.CheckIfUserExists((*user).Nickname, (*user).Email) {
 		return errors.New(models.Errors.InvalidCredentials)
 	}
+
 	// get user password
-	UserPassword, err := s.Database.GetUserPassword((*user).Email)
+	UserPassword, err := s.Database.GetUserPassword((*user).Email, (*user).Nickname)
 	if err != nil {
+		fmt.Println("yeeeeeeeeeees",err)
 		return err
 	}
 
@@ -44,7 +40,7 @@ import (
 	(*user).Uuid = GenerateUuid()
 
 	// Update uuid
-	s.Database.UpdateUuid((*user).Uuid, (*user).Email)
+	s.Database.UpdateUuid((*user).Uuid, (*user).Email, (*user).Nickname)
 
 	return nil
 }
@@ -60,14 +56,19 @@ func (s *Service) RegisterUser(user *models.User) error {
 		return errors.New(models.UserErrors.InvalideAge)
 	}
 
-	//First_Name
-	 if len((*user).First_Name) < 3 || len((*user).First_Name) > 15 {
+	// First_Name
+	if len((*user).First_Name) < 3 || len((*user).First_Name) > 15 {
 		return errors.New(models.UserErrors.InvalideFirst_Name)
 	}
 
 	// Last_Name
 	if len((*user).Last_Name) < 3 || len((*user).Last_Name) > 15 {
 		return errors.New(models.UserErrors.InvalideLast_Name)
+	}
+
+	// Gender
+	if (*user).Gender != "men" && (*user).Gender != "women" {
+		return errors.New(models.Errors.InvalidCredentials)
 	}
 
 	// Password
@@ -91,7 +92,7 @@ func (s *Service) RegisterUser(user *models.User) error {
 
 	// Generate Uuid
 	(*user).Uuid = GenerateUuid()
-	
+
 	// Encrypt Pass
 	var err error
 	(*user).Password, err = EncyptPassword((*user).Password)
@@ -138,13 +139,13 @@ func CheckAgeValidation(age string) bool {
 	}
 
 	return true
-
 }
+
 func (s *Service) GetInfoData(userUID string) (bool, error) {
 	// Get username and user id
-	id,_ := s.Database.GetUser(userUID)
+	id, _ := s.Database.GetUser(userUID)
 	// if id = 0 that means the user doesn't exist
-	var authorized =  id != 0
+	authorized := id != 0
 
 	return authorized, nil
 }

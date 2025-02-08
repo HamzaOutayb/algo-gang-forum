@@ -1,11 +1,28 @@
 package service
 
-import "real-time-forum/internal/models"
+import (
+	"errors"
 
-func (S *Service) GetHistory(from, to int) ([]models.Conversations, error) {
-	messages, err := S.Database.HistoryMessages(from, to)
+	"real-time-forum/internal/models"
+)
+
+const messagesperpage = 10
+
+func (s *Service) GetHistory(user string, to string, pagenm int) ([]models.Conversations, error) {
+	user_id, to_id, err := s.Database.GetId2(user, to)
 	if err != nil {
 		return []models.Conversations{}, err
 	}
-	return messages, nil
+	if pagenm < 1 {
+		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
+	}
+
+	// Transfer "page" to "start" (page 1 mean page one that has 100 mssg from 1 mean message 1)
+
+	start := (messagesperpage * pagenm) - messagesperpage
+	HistoryMessages, err := s.Database.HistoryMessages(user_id, to_id, start)
+	if err != nil {
+		return []models.Conversations{}, err
+	}
+	return HistoryMessages, nil
 }
