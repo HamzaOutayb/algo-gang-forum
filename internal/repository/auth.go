@@ -45,9 +45,9 @@ func (database *Database) CheckIfUserExists(username, email string) bool {
 	return uname == username || uemail == email
 }
 
-func (database *Database) GetUserPassword(email, Nickname string) (string, error) {
+func (database *Database) GetUserPassword(email string) (string, error) {
 	var password string
-	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?", email, Nickname).Scan(&password)
+	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?", email, email).Scan(&password)
 	if err != nil {
 		return "", err
 	}

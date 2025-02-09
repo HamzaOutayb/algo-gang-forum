@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 	"math"
 
 	"real-time-forum/internal/models"
@@ -19,16 +18,13 @@ func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Co
 		return []models.Conversations{}, err
 	}
 
-
 	floatpages := math.Round(float64(count) / messagesperpage)
 	start := (int(floatpages) - pagenm) * int(messagesperpage)
 	if start >= count || start < 0 {
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
-	fmt.Println("start", start)
 	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ORDER BY m.created_at ASC LIMIT ? OFFSET ?", conversations_id, messagesperpage, start)
 	if err != nil {
-		fmt.Println("err")
 		return []models.Conversations{}, err
 	}
 	for rows.Next() {

@@ -830,12 +830,6 @@ async function CreatePost() {
     document.body.style.overflow = "auto";
 }
 
-
-
-
-
-
-
  function Likes_Posts() {
   document.querySelectorAll('.like-post-btn').forEach(e => e.addEventListener('click', async (e) => {
     const currentTarget = e.currentTarget

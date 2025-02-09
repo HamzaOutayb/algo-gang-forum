@@ -24,7 +24,7 @@ func (s *Service) LoginUser(user *models.User) error {
 	}
 
 	// get user password
-	UserPassword, err := s.Database.GetUserPassword((*user).Email, (*user).Nickname)
+	UserPassword, err := s.Database.GetUserPassword((*user).Email)
 	if err != nil {
 		return err
 	}
