@@ -151,6 +151,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	user, err := r.Cookie("session_token")
 	if err != nil || !H.Service.Database.CheckExpiredCookie(user.Value, time.Now()) {
 		utils.WriteJson(w, http.StatusUnauthorized, "unauthorized")

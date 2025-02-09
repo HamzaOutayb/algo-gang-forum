@@ -600,7 +600,7 @@ async function Likes_Comments() {
  function ChatBox(ws) {
   let users =  document.querySelectorAll("button.users")
   
-  users.forEach(e => e.addEventListener("click", async () => {
+  users.forEach(e => e.addEventListener("click", async () => {    
      var TO = e.innerHTML.split("<")[0].trim();
      var TO_id = e.value
      let page = 1
@@ -630,7 +630,7 @@ async function Likes_Comments() {
       },
       body: JSON.stringify(data) 
      }).then(response => response.json()).then(data => {
-      console.log(TO)
+      console.log("yesssssss",page);
       if (data) {
        const chatbox = document.querySelector("#chatBox")
        data.forEach(e => {

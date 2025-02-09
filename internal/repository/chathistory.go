@@ -18,8 +18,8 @@ func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Co
 		return []models.Conversations{}, err
 	}
 
-	floatpages := math.Round(float64(count) / messagesperpage)
-	start := (int(floatpages) - pagenm) * int(messagesperpage)
+	floatpages := math.Ceil(float64(count) / messagesperpage)
+	start := (pagenm - int(floatpages)) * int(messagesperpage)
 	if start >= count || start < 0 {
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
