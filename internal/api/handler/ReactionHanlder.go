@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -27,7 +26,6 @@ func (H *Handler) ReactionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-fmt.Println("ReactionHandler", react)
 	id, err := H.Service.Database.GetUser(cookie.Value)
 	if err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")

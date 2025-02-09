@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -28,11 +27,9 @@ func (H *Handler) InsertPostsHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, 400, "bad request")
 		return
 	}
-	fmt.Println(post)
 
 	err = H.Service.CreatePost(post, cookie.Value)
 	if err != nil {
-		fmt.Println(err)
 		switch err.Error() {
 		case models.PostErrors.ContentLength:
 			utils.WriteJson(w, http.StatusBadRequest, struct {

@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"html"
 	"net/mail"
 	"strconv"
@@ -27,7 +26,6 @@ func (s *Service) LoginUser(user *models.User) error {
 	// get user password
 	UserPassword, err := s.Database.GetUserPassword((*user).Email, (*user).Nickname)
 	if err != nil {
-		fmt.Println("yeeeeeeeeeees",err)
 		return err
 	}
 

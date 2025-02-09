@@ -654,18 +654,22 @@ async function Likes_Comments() {
           },
           body: JSON.stringify(data) 
          }).then(response => response.json()).then(data => {
-          console.log(TO)
           if (data) {
+            console.log(data);
+            
            const chatbox = document.querySelector("#chatBox")
-            data.forEach(e => {
-              chatbox.innerHTML = chatbox.innerHTML+`
-              <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
-              <h4 >${e.Sender}</h4>
+           data.slice().reverse().forEach(e => {
+            console.log("chat box", chatbox.innerHTML);
+            
+            chatbox.innerHTML = `
+            <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
+                <h4>${e.Sender}</h4>
                 <span>${e.Content}</span>
-              <h6>${e.Created_at}</h6>
-              </div></br>
-              `
-           })
+                <h6>${e.Created_at}</h6>
+            </div></br>
+            ` + chatbox.innerHTML;
+        });
+        
            chatbox.scrollTop = chatbox.scrollHeight-scrollHeight
           }
          }  )

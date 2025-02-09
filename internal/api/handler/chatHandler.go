@@ -162,7 +162,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "bad request")
 		return
 	}
-	
+
 	HistoryMessages, err := H.Service.GetHistory(user.Value, to.User_name, pagenm)
 	if err != nil {
 		switch err.Error() {

@@ -17,10 +17,7 @@ func (s *Service) GetHistory(user string, to string, pagenm int) ([]models.Conve
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
 
-	// Transfer "page" to "start" (page 1 mean page one that has 100 mssg from 1 mean message 1)
-
-	start := (messagesperpage * pagenm) - messagesperpage
-	HistoryMessages, err := s.Database.HistoryMessages(user_id, to_id, start)
+	HistoryMessages, err := s.Database.HistoryMessages(user_id, to_id, pagenm)
 	if err != nil {
 		return []models.Conversations{}, err
 	}

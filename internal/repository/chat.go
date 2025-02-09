@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"real-time-forum/internal/models"
 )
 
@@ -88,7 +86,6 @@ AND id NOT IN (
 ) ORDER BY Nickname;
 `, usrid, usrid, usrid, usrid)
 	if err != nil {
-		fmt.Println("er", err)
 		return []models.Chat{}, err
 	}
 

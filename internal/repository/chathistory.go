@@ -3,13 +3,14 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"math"
 
 	"real-time-forum/internal/models"
 )
 
-const messagesperpage = 10
+const messagesperpage float64 = 10
 
-func (Database *Database) HistoryMessages(from, to int, start int) ([]models.Conversations, error) {
+func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Conversations, error) {
 	conversations_id := 0
 	var result []models.Conversations
 	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_two = ? AND user_one = ?)", from, to, from, to).Scan(&conversations_id)
@@ -18,13 +19,16 @@ func (Database *Database) HistoryMessages(from, to int, start int) ([]models.Con
 		return []models.Conversations{}, err
 	}
 
-	if start >= count {
+
+	floatpages := math.Round(float64(count) / messagesperpage)
+	start := (int(floatpages) - pagenm) * int(messagesperpage)
+	if start >= count || start < 0 {
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
-
+	fmt.Println("start", start)
 	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ORDER BY m.created_at ASC LIMIT ? OFFSET ?", conversations_id, messagesperpage, start)
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("err")
 		return []models.Conversations{}, err
 	}
 	for rows.Next() {
@@ -43,14 +47,13 @@ func (Database *Database) HistoryMessages(from, to int, start int) ([]models.Con
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	fmt.Println(result)
 	return result, nil
 }
 
 func (Database *Database) Getchatmessagescount(conversation_id int) (int, error) {
 	var count int
 
-	err := Database.Db.QueryRow("SELECT COUNT(?) FROM messages", conversation_id).Scan(&count)
+	err := Database.Db.QueryRow("SELECT COUNT(*) FROM messages WHERE conversation_id = ?", conversation_id).Scan(&count)
 	if err != nil {
 		return 0, err
 	}

@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -55,7 +54,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		utils.WriteJson(w, http.StatusInternalServerError,"Error While logging To An  Account.")
+		utils.WriteJson(w, http.StatusInternalServerError, "Error While logging To An  Account.")
 		return
 	}
 
@@ -138,7 +137,6 @@ func (H *Handler) LougoutHandler(w http.ResponseWriter, r *http.Request) {
 	statusmap[user_id] = false
 	mu.Unlock()
 	broadcast(conns, statusmap)
-	fmt.Println("test")
 	utils.WriteJson(w, http.StatusOK, "You Logged Out Successfuly!")
 }
 

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"real-time-forum/internal/models"
@@ -42,14 +41,14 @@ func AddSession(session string, email string) error {
 func (database *Database) CheckIfUserExists(username, email string) bool {
 	var uname string
 	var uemail string
-	database.Db.QueryRow("SELECT Nickname, email FROM user WHERE Nickname = ? OR email = ?",username, email).Scan(&uname, &uemail)
+	database.Db.QueryRow("SELECT Nickname, email FROM user WHERE Nickname = ? OR email = ?", username, email).Scan(&uname, &uemail)
 	return uname == username || uemail == email
 }
 
 func (database *Database) GetUserPassword(email, Nickname string) (string, error) {
 	var password string
-	fmt.Println(email, Nickname)
-	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?",email, Nickname).Scan(&password);if err != nil {
+	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?", email, Nickname).Scan(&password)
+	if err != nil {
 		return "", err
 	}
 	return password, nil
