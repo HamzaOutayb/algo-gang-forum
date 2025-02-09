@@ -9,7 +9,6 @@ let nomoremessage = false;
 let nomoreusers = false;
 let nomoreconversations = false;
 var NofetchComment = false
-let Status_list
 let idtime
 let inchat = false
 fetch('/api/checkuser').then(response => response.json()).then(data => {
@@ -119,11 +118,10 @@ async function Register () {
 
 
 function Listeners() {
-  showAllComments()
   ShowCreatePost()
-  InsertComment()
   Likes_Posts()
-  CreatePost()
+  GetSinglePost()
+  InsertComment()
 }
 
 
@@ -228,6 +226,8 @@ done_resize = false;
            <h2>Contact</h2>
         </aside>
       <main class="posts-container">
+      <div class="NOTIFICATION">
+      </div>
           <h1>Posts</h1>
           <ul>
           </ul>
@@ -348,9 +348,12 @@ async function GetAllPosts(page = 1) {
     NofetchComment = false
     return;
   }
+ 
   await fetch(`/api/post?page=${page}`) .then((response) => response.json()).then( async (e) => {
     if (e) {
-    let ul = document.querySelector('ul')
+      console.log(page);
+      
+      let ul = document.querySelector('ul')
     await e.forEach((data)=> {
         ul.innerHTML += `  <li class="post-item" data-post-id="${data.id}">
        
@@ -381,9 +384,9 @@ async function GetAllPosts(page = 1) {
                       </button>
               </li>`
     })
+  } else {
+    nomoreposts = true
   }
-  }).catch(e => {
-    nomoreposts = true; 
   })
   Likes_Posts()
   document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
@@ -402,10 +405,13 @@ async function GetAllPosts(page = 1) {
     let done = false
     window.addEventListener("scroll", function() {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
-        if (!done && !NofetchComment){
+        if (!done && !NofetchComment) {
+          console.log("sad",page_posts)
           GetAllPosts(++page_posts)
+
           clearTimeout(debounceTimer);
           done = true
+
         }
         debounceTimer = setTimeout(() => {
           done = false
@@ -505,8 +511,6 @@ async function GetAllComment(id,page_comments = 1) {
   let Comment = await fetch(`/api/GetComments/${id}/?page=${page_comments}`).then(response => response.json())      
   if (Comment) { 
     const commentList = document.querySelector("main > ul")
-    console.log(Comment);
-    
    await Comment.forEach((comment) => { 
       commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
                 <div class="username">${comment.author}</div>
@@ -522,10 +526,10 @@ async function GetAllComment(id,page_comments = 1) {
                         ${comment.dislikes}
                     </button>
             </li>`})
-    Likes_Comments()
-    InsertComment()
-    Likes_Posts()    
+    Likes_Comments()   
   }
+  InsertComment()
+    Likes_Posts() 
 }
 
 
@@ -533,7 +537,7 @@ async function GetAllComment(id,page_comments = 1) {
 
 async function Likes_Comments() {
   document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
-    
+    let currentTarget = e.currentTarget
     const id =  await e.target.closest('.comment-item').getAttribute('data-comment-id');
     
     const data = { thread_type: 'comment', thread_id: parseInt(id), react: 1 }
@@ -547,11 +551,11 @@ async function Likes_Comments() {
       response = await response.json()
       const dislikeButton = await e.target.closest('.comment-item').querySelector('button.dislike-comment-btn')
        if (response.isliked){
-          e.target.classList.add("like-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+          currentTarget.classList.add("like-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }else {
-          e.target.classList.remove("like-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
+          currentTarget.classList.remove("like-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }
         if (response.isdisliked){
           dislikeButton.classList.add("dislike-reacted")
@@ -564,7 +568,7 @@ async function Likes_Comments() {
     
     }))
     document.querySelectorAll('.dislike-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
-     
+      let currentTarget = e.currentTarget
       const id = await e.target.closest('.comment-item').getAttribute('data-comment-id');
       
       const data = { thread_type: 'comment', thread_id: parseInt(id), react: 2 }
@@ -586,11 +590,11 @@ async function Likes_Comments() {
           likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
         }
         if (response.isdisliked){
-          e.target.classList.add("dislike-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+          currentTarget.classList.add("dislike-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
         }else {
-           e.target.classList.remove("dislike-reacted")
-          e.target.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
+           currentTarget.classList.remove("dislike-reacted")
+          currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
         }
 
       }))
@@ -601,10 +605,13 @@ async function Likes_Comments() {
   let users =  document.querySelectorAll("button.users")
   
   users.forEach(e => e.addEventListener("click", async () => {
+    if (document.querySelector(".chat-container")) {
+      return
+    }
      var TO = e.innerHTML.split("<")[0].trim();
      var TO_id = e.value
      let page = 1
-     if (!document.querySelector(".chat-container")) {
+     
      document.querySelector("main").innerHTML += `
      <div class="chat-container">
      <button class="X">X</button>
@@ -616,12 +623,11 @@ async function Likes_Comments() {
    
    <div class="input-area">
      <input type="text " id="messageInput" class="message-input" placeholder="Type your message...">
-     <button class="send-btn">Send</button>
    </div>
    <span class="typing-indicator"></span>
  </div>
      `
-     }
+     
      const data = { message: TO, to: TO_id }
      await fetch(`/api/chathistory/${page}`, {
         method: "POST",
@@ -678,13 +684,7 @@ async function Likes_Comments() {
 
       }
       startchat(ws)
-      document.body.style.overflow = "hidden";
-      document.querySelector(".X").addEventListener("click", () => {
-        inchat = false
-        document.querySelector(".chat-container").remove()
-        Listeners()
-        document.body.style.overflow = "auto"; ;
-      })
+      
      })
   }))
   
@@ -693,12 +693,23 @@ async function Likes_Comments() {
 
 
 async  function  startchat(ws) {
+  document.body.style.overflow = "hidden";
+      document.querySelector(".X").addEventListener("click", () => {
+        inchat = false
+        document.querySelector(".chat-container").remove()
+        Listeners()
+        document.body.style.overflow = "auto"; ;
+      })
  inchat = true
  const to =  document.querySelector("#TO").getAttribute("value");
   const TO_id =  document.querySelector("#TO").innerHTML;
   const chatBox = document.getElementById('messageInput');
   chatBox.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
+      if (chatBox.value === '') {
+        return;
+      }
+      
       ws.send(JSON.stringify({ message: chatBox.value, to: parseInt(to) }));
       chatBox.value = '';
     } else {
@@ -716,7 +727,7 @@ async  function  startchat(ws) {
     chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO"  :"Message_From"}>
           <h4 >${parsedMessage.sender}</h4>
             <span>${parsedMessage.message}</span>
-          <h6>${parsedMessage.Date}</h6>
+          <h6>${parsedMessage.Date.split(".")[0]}</h6>
           </div></br>`;
    }else if (parsedMessage.istyping === true) {
     if (TO_id == parsedMessage.sender) {
@@ -729,17 +740,21 @@ async  function  startchat(ws) {
       typing .innerHTML = `${parsedMessage.sender}  is typing<img src="Assets/JVX7.gif" alt="loding"> `
       idtime = setTimeout(() => {
         typing .innerHTML = ``
-      },1500)
+      },500)
     }
    
   }
     }else {
-     document.body.innerHTML += `<div class="NOTIFICATION">
-     <h4 >NEW MESSAGE FROM ${parsedMessage.sender}</h4>
-     </div>`
+      if (parsedMessage.sender){
+        const NOTIFICATION =  document.querySelector(".NOTIFICATION")
+        NOTIFICATION.innerHTML = `
+     <h4 >NEW MESSAGE FROM ${parsedMessage.sender}</h4>`
+     NOTIFICATION.style.display = "block"
      setTimeout(() => {
-      document.querySelector(".NOTIFICATION").remove()
+     NOTIFICATION.style.display = "none"
+     NOTIFICATION.innerHTML = ""
      },1500)
+      }
    }
   }
 }
@@ -762,11 +777,13 @@ async function StartWs() {
         Status(parsedData.Status)
       } else if (parsedData.message) {
         if (!inchat) {
-          document.querySelector("main").innerHTML += `<div class="NOTIFICATION">
-     <h4 >NEW MESSAGE FROM ${parsedData.sender}</h4>
-     </div>`
+        const NOTIFICATION =  document.querySelector(".NOTIFICATION")
+        NOTIFICATION.innerHTML = `
+     <h4 >NEW MESSAGE FROM ${parsedData.sender}</h4>`
+     NOTIFICATION.style.display = "block"
      setTimeout(() => {
-      document.querySelector(".NOTIFICATION").remove()
+     NOTIFICATION.style.display = "none"
+     NOTIFICATION.innerHTML = ""
      },1500)
         }
       }
@@ -814,6 +831,7 @@ function Status(data) {
 async function CreatePost() {
   const title = document.querySelector('#title').value
   const content = document.querySelector('#content').value
+  const error = document.querySelector('.errorMessage')
   const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value)
   const data = { title: title, content: content, categories: categories }
   await fetch('/create_post', {
@@ -822,12 +840,16 @@ async function CreatePost() {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(data)
+    }).then(response => {
+      if (response.ok) {
+        GoToHomePage()
+      document.body.style.overflow = "auto";
+      }
     }).catch(e => {
-      console.log(e)
+      error.innerHTML = e
       return
     })
-    GoToHomePage()
-    document.body.style.overflow = "auto";
+    
 }
 
 
@@ -903,7 +925,7 @@ async function CreatePost() {
     }
    
 
-    function Resize() {
+function Resize() {
        const width = window.innerWidth;
       
         if (width < 768) {
@@ -911,6 +933,7 @@ async function CreatePost() {
             done_resize = true;
             const buttonaside = document.createElement('button');
             buttonaside.classList.add('buttonaside');
+            buttonaside.innerHTML = '<i class="fas fa-bars"></i>';
             document.body.appendChild(buttonaside);
       
          

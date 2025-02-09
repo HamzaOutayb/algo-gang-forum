@@ -32,7 +32,7 @@ type Message struct {
 type Data_send struct {
 	Sender   string `json:"sender"`
 	Message  string `json:"message"`
-	Date     time.Time
+	Date    time.Time
 	To       int `json:"to"`
 	Status   map[int]bool
 	IsTyping bool `json:"istyping"`
@@ -111,10 +111,11 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		if !UnmarshalData.IsTyping {
 			err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 		}
 		UnmarshalData.Sender = user_name
+		UnmarshalData.Date = time.Now()
 		mu.Unlock()
 
 		for _, value := range conns[user_id] {
