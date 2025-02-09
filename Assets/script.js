@@ -630,8 +630,9 @@ async function Likes_Comments() {
       },
       body: JSON.stringify(data) 
      }).then(response => response.json()).then(data => {
-      console.log("yesssssss",page);
+      console.log(data,"yeeeesw");
       if (data) {
+        
        const chatbox = document.querySelector("#chatBox")
        data.forEach(e => {
           chatbox.innerHTML += `
