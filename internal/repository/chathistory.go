@@ -22,8 +22,9 @@ func (Database *Database) HistoryMessages(from, to int, start int) ([]models.Con
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
 
-	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? LIMIT ? OFFSET ?", conversations_id, messagesperpage, start)
+	rows, err := Database.Db.Query("SELECT u.Nickname,m.content,m.created_at FROM messages m JOIN user u ON m.sender_id = u.id WHERE conversation_id = ? ORDER BY m.created_at ASC LIMIT ? OFFSET ?", conversations_id, messagesperpage, start)
 	if err != nil {
+		fmt.Println("err", err)
 		return []models.Conversations{}, err
 	}
 	for rows.Next() {

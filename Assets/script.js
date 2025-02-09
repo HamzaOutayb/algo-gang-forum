@@ -658,13 +658,13 @@ async function Likes_Comments() {
           if (data) {
            const chatbox = document.querySelector("#chatBox")
             data.forEach(e => {
-              chatbox.innerHTML = `
+              chatbox.innerHTML = chatbox.innerHTML+`
               <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
               <h4 >${e.Sender}</h4>
                 <span>${e.Content}</span>
               <h6>${e.Created_at}</h6>
               </div></br>
-              `+chatbox.innerHTML
+              `
            })
            chatbox.scrollTop = chatbox.scrollHeight-scrollHeight
           }
