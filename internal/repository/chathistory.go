@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 
 	"real-time-forum/internal/models"
 )
@@ -55,7 +54,6 @@ func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Co
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	fmt.Println("result", result)
 	return result, nil
 }
 
