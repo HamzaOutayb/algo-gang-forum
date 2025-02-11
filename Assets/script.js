@@ -699,11 +699,23 @@ async  function  startchat(ws) {
   const chatBox = document.getElementById('messageInput');
   chatBox.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-      if (chatBox.value === '') {
+      if (chatBox.value.trim() === '') {
         return;
       }
-      
-      ws.send(JSON.stringify({ message: chatBox.value, to: parseInt(to) }));
+      function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, (char) => {
+            const escapeChars = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            };
+            return escapeChars[char];
+        });
+    }
+    const DM = escapeHTML(chatBox.value)
+      ws.send(JSON.stringify({ message: DM, to: parseInt(to) }));
       chatBox.value = '';
     } else {
       ws.send(JSON.stringify({ istyping: true, to: parseInt(to) }));
