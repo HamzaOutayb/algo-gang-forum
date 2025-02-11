@@ -86,6 +86,11 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
+		// gender 
+        if err.Error() == models.Errors.InvalidCredentials {
+            utils.WriteJson(w, http.StatusBadRequest, "bad request gender!")
+            return
+        }
 
 		// Age
 		if err.Error() == models.UserErrors.InvalideAge {

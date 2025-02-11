@@ -11,17 +11,20 @@ let nomoreconversations = false;
 var NofetchComment = false
 let idtime
 let inchat = false
+
 fetch('/api/checkuser').then(response => response.json()).then(data => {  
+  console.log(data)
   if (!data) {
+    ws.close()
     GoToLoginPage()
+  } else {
+    GoToHomePage()
   }
 })
 
 let is_resize = false;
 let done_resize = false;
-if (document.cookie) {
-  GoToHomePage()
-}
+
 
 
 function Login_page(){
@@ -53,8 +56,7 @@ async function deleteCookie() {
   }).then(response => {
     console.log(response.ok)
    if(response.ok){
-         ws.close()
-
+    ws?.close()
      GoToLoginPage()
     document.cookie = 'session_token=;expires=Tue, 22 Aug 2001 12:00:00 UTC;'
    }
@@ -89,7 +91,7 @@ async function Login (Login_re,key_re) {
 async function Register () {
   let nickname = document.querySelector('input#nickname')
   let age = document.querySelector('input#age')
-  let gender = document.querySelector('input#gender')
+  let gender = document.querySelector('select#gender')
   let first_Name = document.querySelector('input#first_Name')
   let last_Name = document.querySelector('input#last_Name')
   let email = document.querySelector('input#email_re')
@@ -161,12 +163,12 @@ function GoToLoginPage() {
         <div class="input-group">
             <input type="nickname" id="nickname" name="nickname"  placeholder="Nickname:" required>
         </div>
-
         <div class="input-group">
-            <input type="age" id="age" name="age" placeholder="Age:" required>
-        </div>
-        <div class="input-group">
-            <input type="gender" id="gender" name="gender" placeholder="Gender:" required>
+         <input type="age" id="age" name="age" placeholder="Age:" required>
+            <select id="gender">
+                <option value="men">men</option>
+                <option value="women">women</option>
+                </select>
         </div>
         <div class="input-group">
             <input type="first_Name" id="first_Name" name="first_Name" placeholder="First_Name:" required>
@@ -222,6 +224,7 @@ done_resize = false;
   document.body.innerHTML +=  `
    <aside class="sidebar-left">
            <h2>Contact</h2>
+           <div class="listaside"></div>
         </aside>
       <main class="posts-container">
       <div class="NOTIFICATION">
@@ -297,16 +300,15 @@ function ShowCreatePost() {
 
 async function FetchChatWithConversations() {
   await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {    
-    let aside = document.querySelector('.sidebar-left')
      if (e){
-       let listaside = document.createElement('div')
-       listaside.classList.add('listaside')
+       let listaside = document.querySelector('.listaside')
+       if (listaside) {
        e.slice().reverse().forEach((data)=> {
        listaside.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
-       <p class="status"></p>
+       <p class="status status_offline">offline</p>
        </button>`
      })
-     aside.appendChild(listaside)
+    }
    }
    })
    FetchConversations()
@@ -318,22 +320,9 @@ async function FetchConversations() {
    let s =  document.querySelector('.listaside')
    await e.forEach((data)=> {
     if (s){
-       console.log(data,s)
       s.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
-      <p class="status"></p>
+      <p class="status status_offline">offline</p>
       </button>`
-    }else {
-      console.log(data,s)
-      let listaside = document.createElement('div')
-       listaside.classList.add('listaside')
-       listaside.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
-      <p class="status"></p>
-      </button>`
-      let aside = document.querySelector('.sidebar-left')
-      if (aside) {
-        aside.appendChild(listaside)
-      }
-      
     }
    })
    }})
@@ -691,7 +680,7 @@ async  function  startchat(ws) {
         inchat = false
         document.querySelector(".chat-container").remove()
         Listeners()
-        document.body.style.overflow = "auto"; ;
+        document.body.style.overflow = "auto"; 
       })
  inchat = true
  const to =  document.querySelector("#TO").getAttribute("value");
@@ -727,6 +716,11 @@ async  function  startchat(ws) {
    
    if (parsedMessage.Status == null) {
     if ((parsedMessage.to == to || parsedMessage.sender == TO_id) && parsedMessage.message) {
+      let list = document.querySelector(".listaside") 
+      if (list) {
+        list.innerHTML = ""
+        FetchChatWithConversations()
+     }
    const chatBox = document.getElementById('chatBox');   
    if (chatBox) {
     chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO"  :"Message_From"}>
@@ -750,19 +744,9 @@ async  function  startchat(ws) {
     }
    
   }
-    }else {
-      if (parsedMessage.sender){
-        const NOTIFICATION =  document.querySelector(".NOTIFICATION")
-        NOTIFICATION.innerHTML = `
-     <h4 >NEW MESSAGE FROM ${parsedMessage.sender}</h4>`
-     NOTIFICATION.style.display = "block"
-     setTimeout(() => {
-     NOTIFICATION.style.display = "none"
-     NOTIFICATION.innerHTML = ""
-     },1500)
-      }
    }
   }
+  
 }
 }
 
@@ -821,11 +805,16 @@ function Status(data) {
           const statusElement = e.querySelector('.status');
           if (statusElement) {
             statusElement.innerHTML = 'online';
+            statusElement.classList.remove("status_offline")
+            statusElement.classList.add("status_online")
           }
         } else {
           const statusElement = e.querySelector('.status');
           if (statusElement) {
             statusElement.innerHTML = 'offline';
+            statusElement.classList.remove("status_online")
+            statusElement.classList.add("status_offline")
+
           }
         }
       }

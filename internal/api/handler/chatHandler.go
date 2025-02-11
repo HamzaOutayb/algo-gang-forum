@@ -83,8 +83,8 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		}
 		Indexconss := H.Service.LookingForIndexconns(conns[user_id], conn)
 		conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
-		go broadcast(conns, logout)
 		conn.Close()
+		broadcast(conns, logout)
 		mu.Unlock()
 		fmt.Println(user_name + " disconnected")
 	}()

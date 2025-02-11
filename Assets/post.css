@@ -365,6 +365,13 @@ button[type="submit"] {
     z-index: 87986;
   }
 
+  .status_offline {
+    color: red;
+  }
+
+  .status_online {
+    color: green;
+  }
   .NOTIFICATION {
     display: none;
     position: fixed;
