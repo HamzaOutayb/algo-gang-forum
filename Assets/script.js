@@ -11,9 +11,7 @@ let nomoreconversations = false;
 var NofetchComment = false
 let idtime
 let inchat = false
-fetch('/api/checkuser').then(response => response.json()).then(data => {
-  console.log(data);
-  
+fetch('/api/checkuser').then(response => response.json()).then(data => {  
   if (!data) {
     GoToLoginPage()
   }
@@ -716,14 +714,15 @@ async  function  startchat(ws) {
    const parsedMessage = JSON.parse(message.data);
    
    if (parsedMessage.Status == null) {
-    
     if ((parsedMessage.to == to || parsedMessage.sender == TO_id) && parsedMessage.message) {
-   const chatBox = document.getElementById('chatBox');
+   const chatBox = document.getElementById('chatBox');   
+   if (chatBox) {
     chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO"  :"Message_From"}>
           <h4 >${parsedMessage.sender}</h4>
             <span>${parsedMessage.message}</span>
           <h6>${parsedMessage.Date.split(".")[0]}</h6>
           </div></br>`;
+   }
    }else if (parsedMessage.istyping === true) {
     if (TO_id == parsedMessage.sender) {
       console.log(parsedMessage)

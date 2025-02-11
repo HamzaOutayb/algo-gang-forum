@@ -19,7 +19,7 @@ func (s *Service) LoginUser(user *models.User) error {
 		return errors.New(models.Errors.InvalidPassword)
 	}
 	// check existance
-	if !s.Database.CheckIfUserExists((*user).Nickname, (*user).Email) {
+	if !s.Database.CheckIfUserExists((*user).Email) {
 		return errors.New(models.Errors.InvalidCredentials)
 	}
 
@@ -84,7 +84,7 @@ func (s *Service) RegisterUser(user *models.User) error {
 	}
 
 	// username or email existance
-	if s.Database.CheckIfUserExists((*user).Nickname, (*user).Email) {
+	if s.Database.CheckIfUserExists((*user).Email) {
 		return errors.New(models.Errors.UserAlreadyExist)
 	}
 

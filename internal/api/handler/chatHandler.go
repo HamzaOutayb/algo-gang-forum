@@ -42,7 +42,6 @@ var (
 	conns     = make(map[int][]*websocket.Conn)
 	mu        = &sync.Mutex{}
 	statusmap = make(map[int]bool)
-	data      Data_send
 )
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {

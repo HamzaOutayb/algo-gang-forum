@@ -38,11 +38,14 @@ func AddSession(session string, email string) error {
 	return err
 }
 
-func (database *Database) CheckIfUserExists(username, email string) bool {
+func (database *Database) CheckIfUserExists(email string) bool {
 	var uname string
 	var uemail string
-	database.Db.QueryRow("SELECT Nickname, email FROM user WHERE Nickname = ? OR email = ?", username, email).Scan(&uname, &uemail)
-	return uname == username || uemail == email
+	err := database.Db.QueryRow("SELECT Nickname, email FROM user WHERE Nickname = ? OR email = ?", email, email).Scan(&uname, &uemail)
+	if err != nil {
+		return false
+	}
+	return uname == email || uemail == email
 }
 
 func (database *Database) GetUserPassword(email string) (string, error) {

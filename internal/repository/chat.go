@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"html"
+
 	"real-time-forum/internal/models"
 )
 
@@ -17,11 +19,13 @@ func (Database *Database) InsertChat(From, To int, Message string) error {
 			return err
 		}
 	}
-	_, err := Database.Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, Message, Conversations_ID)
+	DM := html.EscapeString(Message)
+	_, err := Database.Db.Exec("INSERT INTO messages (sender_id, content, conversation_id) VALUES (?, ?, ?)", From, DM, Conversations_ID)
 	if err != nil {
 		return err
 	}
-	_, err = Database.Db.Exec("UPDATE conversations SET created_at = datetime('now') WHERE id = ?", Conversations_ID); if err != nil {
+	_, err = Database.Db.Exec("UPDATE conversations SET created_at = datetime('now') WHERE id = ?", Conversations_ID)
+	if err != nil {
 		return err
 	}
 	return nil
