@@ -2,13 +2,15 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 
 	"real-time-forum/internal/models"
 )
 
 const messagesperpage = 10
 
-func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Conversations, error) {
+func (Database *Database) HistoryMessages(from int, to string, pagenm int) ([]models.Conversations, error) {
+	fmt.Println(from,to)
 	conversations_id := 0
 	var result []models.Conversations
 	err := Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_two = ? AND user_one = ?)", from, to, from, to).Scan(&conversations_id)
@@ -54,6 +56,7 @@ func (Database *Database) HistoryMessages(from, to int, pagenm int) ([]models.Co
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+	fmt.Println(result)
 	return result, nil
 }
 

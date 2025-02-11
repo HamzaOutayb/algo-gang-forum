@@ -115,6 +115,8 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 			utils.WriteJson(w, http.StatusConflict, models.Errors.UserAlreadyExist)
 			return
 		}
+
+	
 		utils.WriteJson(w, http.StatusInternalServerError, "Error While Registering The User.")
 		return
 	}

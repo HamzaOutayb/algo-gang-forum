@@ -83,7 +83,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		}
 		Indexconss := H.Service.LookingForIndexconns(conns[user_id], conn)
 		conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
-		go broadcast(conns, logout)
+		broadcast(conns, logout)
 		conn.Close()
 		mu.Unlock()
 		fmt.Println(user_name + " disconnected")
@@ -139,11 +139,11 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Message struct {
-		User_name string `json:"message"`
+	type usertwoid struct {
+		UserId string `json:"to"`
 	}
 
-	var to Message
+	var to usertwoid
 
 	pagenm, err := strconv.Atoi(r.PathValue("chatpage"))
 	if err != nil {
@@ -163,7 +163,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	HistoryMessages, err := H.Service.GetHistory(user.Value, to.User_name, pagenm)
+	HistoryMessages, err := H.Service.GetHistory(user.Value, to.UserId, pagenm)
 	if err != nil {
 		switch err.Error() {
 		case sql.ErrNoRows.Error():
@@ -174,7 +174,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
+	
 	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 
