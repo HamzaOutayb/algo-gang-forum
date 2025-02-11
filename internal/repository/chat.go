@@ -21,10 +21,11 @@ func (Database *Database) InsertChat(From, To int, Message string) error {
 	if err != nil {
 		return err
 	}
+	_, err = Database.Db.Exec("UPDATE conversations SET created_at = datetime('now') WHERE id = ?", Conversations_ID); if err != nil {
+		return err
+	}
 	return nil
 }
-
-const pagesize = 10
 
 func (Database *Database) GetChatWith(pagenm int, usrid int) ([]models.Chat, error) {
 	rows, err := Database.Db.Query(`
@@ -71,7 +72,6 @@ func (Database *Database) GetuserNickname(Friendid string) (string, error) {
 }
 
 func (Database *Database) GetChat(pagenm int, usrid int) ([]models.Chat, error) {
-	// start := pagenm * pagesize
 	rows, err := Database.Db.Query(`SELECT id Nickname
 FROM user
 WHERE id != ?

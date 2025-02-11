@@ -45,18 +45,18 @@ func (database *Database) CheckIfUserExists(username, email string) bool {
 	return uname == username || uemail == email
 }
 
-func (database *Database) GetUserPassword(email, Nickname string) (string, error) {
+func (database *Database) GetUserPassword(email string) (string, error) {
 	var password string
-	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?", email, Nickname).Scan(&password)
+	err := database.Db.QueryRow("SELECT password FROM user WHERE email = ? OR Nickname = ?", email, email).Scan(&password)
 	if err != nil {
 		return "", err
 	}
 	return password, nil
 }
 
-func (database *Database) UpdateUuid(uuid, email, Nickname string) error {
+func (database *Database) UpdateUuid(uuid, email string) error {
 	expire := time.Now().Add(time.Hour)
-	_, err := database.Db.Exec("UPDATE user SET uid = ?, expired_at = ? WHERE email = ? OR Nickname = ?", uuid, expire, email, Nickname)
+	_, err := database.Db.Exec("UPDATE user SET uid = ?, expired_at = ? WHERE email = ? OR Nickname = ?", uuid, expire, email, email)
 	return err
 }
 

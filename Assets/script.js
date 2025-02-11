@@ -298,12 +298,12 @@ function ShowCreatePost() {
 }
 
 async function FetchChatWithConversations() {
-  await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {
+  await fetch("/ChatWithConversations/").then(response =>  response.json()).then(e => {    
     let aside = document.querySelector('.sidebar-left')
      if (e){
        let listaside = document.createElement('div')
        listaside.classList.add('listaside')
-     e.forEach((data)=> {
+       e.slice().reverse().forEach((data)=> {
        listaside.innerHTML += `<button class="users" value="${data.friendid}">${data.nickname}
        <p class="status"></p>
        </button>`
@@ -636,10 +636,9 @@ async function Likes_Comments() {
       },
       body: JSON.stringify(data) 
      }).then(response => response.json()).then(data => {
-      console.log(TO)
       if (data) {
        const chatbox = document.querySelector("#chatBox")
-       data.forEach(e => {
+       data.slice().reverse().forEach(e => {
           chatbox.innerHTML += `
           <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
           <h4 >${e.Sender}</h4>
@@ -658,15 +657,11 @@ async function Likes_Comments() {
             headers: {
               "Content-Type": "application/json"
           },
-          body: JSON.stringify(data) 
+          body: JSON.stringify(data)
          }).then(response => response.json()).then(data => {
-          if (data) {
-            console.log(data);
-            
+          if (data) {            
            const chatbox = document.querySelector("#chatBox")
-           data.slice().reverse().forEach(e => {
-            console.log("chat box", chatbox.innerHTML);
-            
+           data.forEach(e => {            
             chatbox.innerHTML = `
             <div class=${e.Sender == TO ? "Message_From" : "Message_TO"}>
                 <h4>${e.Sender}</h4>

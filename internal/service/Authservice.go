@@ -24,7 +24,7 @@ func (s *Service) LoginUser(user *models.User) error {
 	}
 
 	// get user password
-	UserPassword, err := s.Database.GetUserPassword((*user).Email, (*user).Nickname)
+	UserPassword, err := s.Database.GetUserPassword((*user).Email)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (s *Service) LoginUser(user *models.User) error {
 	(*user).Uuid = GenerateUuid()
 
 	// Update uuid
-	s.Database.UpdateUuid((*user).Uuid, (*user).Email, (*user).Nickname)
+	s.Database.UpdateUuid((*user).Uuid, (*user).Email)
 
 	return nil
 }
