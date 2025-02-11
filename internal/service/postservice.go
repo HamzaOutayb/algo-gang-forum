@@ -6,6 +6,7 @@ import (
 	"html"
 	"strconv"
 	"strings"
+	"time"
 
 	"real-time-forum/internal/models"
 	"real-time-forum/internal/repository"
@@ -106,10 +107,10 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 	if total == 0 {
 		return []models.Post{}, nil
 	}
-	if num - 1 == (total/models.PostsPerPage) + (total % models.PostsPerPage) {
+	if num-1 == (total/models.PostsPerPage)+(total%models.PostsPerPage) {
 		start = models.PostsPerPage % total
-	} else if num - 1 > (total/models.PostsPerPage) + (total % models.PostsPerPage) {
-		return []models.Post{},nil
+	} else if num-1 > (total/models.PostsPerPage)+(total%models.PostsPerPage) {
+		return []models.Post{}, nil
 	}
 	row, err := s.Database.ExtractPosts(start)
 	if err != nil {
@@ -124,6 +125,9 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 			return nil, err
 		}
 		post.IsLiked, post.IsDisliked = s.Database.CheckIfLikedPost(post.ID, userID)
+
+		post.Created = parseDate(post.Created)
+
 		// Get categories
 		categories, err := s.Database.GetPostCategories(post.ID)
 		if err != nil {
@@ -137,6 +141,17 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func parseDate(dateStr string) string {
+	// Parse the time string
+	parsedTime, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		return ""
+	}
+
+	// Format as dd/mm/yy
+	return parsedTime.Format("02/01/06")
 }
 
 const standardCommentLength = 300

@@ -6,10 +6,8 @@ import (
 	"real-time-forum/internal/models"
 )
 
-const messagesperpage = 10
-
-func (s *Service) GetHistory(user string, to string, pagenm int) ([]models.Conversations, error) {
-	user_id, to_id, err := s.Database.GetId2(user, to)
+func (s *Service) GetHistory(user_uid string, to_id string, pagenm int) ([]models.Conversations, error) {
+	user_id, err := s.Database.GetId2(user_uid)
 	if err != nil {
 		return []models.Conversations{}, err
 	}

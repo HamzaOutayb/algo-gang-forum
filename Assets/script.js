@@ -615,7 +615,9 @@ async function Likes_Comments() {
  </div>
      `
      
-     const data = { message: TO, to: TO_id }
+     const data = { message: TO, to: TO_id }     
+     console.log(data);
+     
      await fetch(`/api/chathistory/${page}`, {
         method: "POST",
         headers: {
@@ -684,7 +686,7 @@ async  function  startchat(ws) {
       })
  inchat = true
  const to =  document.querySelector("#TO").getAttribute("value");
-  const TO_id =  document.querySelector("#TO").innerHTML;
+  const TO_id =  document.querySelector("#TO").innerHTML;  
   const chatBox = document.getElementById('messageInput');
   chatBox.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {

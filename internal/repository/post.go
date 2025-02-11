@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"real-time-forum/internal/models"
 )
@@ -82,10 +83,22 @@ func (d *Database) GetPost(id, user_id int) (models.Post, error) {
 	if err != nil {
 		return models.Post{}, row.Err()
 	}
+	post.Created = parseDate(post.Created)
 	if id != 0 {
 		post.IsLiked, post.IsDisliked = d.CheckIfLikedPost(post.ID, user_id)
 	}
 	return post, row.Err()
+}
+
+func parseDate(dateStr string) string {
+	// Parse the time string
+	parsedTime, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		return ""
+	}
+
+	// Format as dd/mm/yy
+	return parsedTime.Format("02/01/06")
 }
 
 func (d *Database) CheckIfLikedPost(post_id, user_id int) (bool, bool) {
@@ -130,6 +143,7 @@ func (d *Database) Tablelen(table string, total *int) error {
 	err := d.Db.QueryRow("SELECT COUNT(*) FROM " + table).Scan(total)
 	return err
 }
+
 func (d *Database) TablelenComment(id string, total *int) error {
 	err := d.Db.QueryRow("SELECT COUNT(*) FROM comment WHERE post_id = ? " + id).Scan(total)
 	return err
