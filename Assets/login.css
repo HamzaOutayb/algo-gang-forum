@@ -16,6 +16,13 @@ body {
     box-shadow: 0px 4px 8px rgba(114, 119, 123, 0.7);
     text-align: center;
 }
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
 #login_switch_button {
     background: transparent;
