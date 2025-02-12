@@ -13,25 +13,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *Service) LoginUser(user *models.User) error {
+func (s *Service) LoginUser(user *models.User) (string, error) {
 	// Password
 	if len((*user).Password) < 6 || len((*user).Password) > 30 {
-		return errors.New(models.Errors.InvalidPassword)
+		return "", errors.New(models.Errors.InvalidPassword)
 	}
 	// check existance
 	if !s.Database.CheckIfUserExists((*user).Email) {
-		return errors.New(models.Errors.InvalidCredentials)
+		return "", errors.New(models.Errors.InvalidCredentials)
 	}
 
 	// get user password
 	UserPassword, err := s.Database.GetUserPassword((*user).Email)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Check Password Validity
 	if !CheckPasswordValidity(UserPassword, (*user).Password) {
-		return errors.New(models.Errors.InvalidCredentials)
+		return "", errors.New(models.Errors.InvalidCredentials)
 	}
 
 	// generate new uuid
@@ -39,8 +39,8 @@ func (s *Service) LoginUser(user *models.User) error {
 
 	// Update uuid
 	s.Database.UpdateUuid((*user).Uuid, (*user).Email)
-
-	return nil
+	username, _, _ := s.Database.GetId(user.Uuid)
+	return username, nil
 }
 
 func (s *Service) RegisterUser(user *models.User) error {

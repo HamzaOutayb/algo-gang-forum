@@ -11,6 +11,7 @@ let nomoreconversations = false;
 var NofetchComment = false
 let idtime
 let inchat = false
+var user = ""
 
 window.history.pushState({}, '', "/");
 
@@ -94,6 +95,7 @@ async function Login(Login_re, key_re) {
     errorMessage.classList.add("errorMessage")
     errorMessage.innerHTML = errorData
   } else {
+    user = await response.json()    
     GoToHomePage()
   }
 
@@ -374,11 +376,6 @@ async function GetAllPosts(page = 1) {
                           ${data.dislikes}
                 
                   </div>
-
-                      <input type="text" name="comment" placeholder="Add a comment..." required>
-                      <button type="submit" value="${data.id}" name="id-post">
-                          <i class="fas fa-comment">add</i>
-                      </button>
               </li>`
       })
     } else {
@@ -437,6 +434,17 @@ function InsertComment() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
+    }).then(response =>  {
+      if (response.ok) {
+        console.log('Comment added successfully');
+        
+        const commentList = document.querySelector(".comment-container")
+        commentList.innerHTML = `<li class="comment-item">
+                <div class="username">${user}</div>
+                <p class="content-preview">${data.content}</p>
+                <div class="post-date">${new Date()}</div>
+            </li>` + commentList.innerHTML
+      }
     }).catch(e => {
       console.log(e)
     })
@@ -479,7 +487,8 @@ function GetSinglePost() {
                         <button type="submit" value="${post.id}" name="id-post">
                             <i class="fas fa-comment">add</i>
                         </button>
-                </li>`
+                </li>
+                <div class="comment-container"></div>`
         NofetchComment = true
       }
       GetAllComment(id)
@@ -510,23 +519,13 @@ async function GetAllComment(id, page_comments = 1) {
   }
   let Comment = await fetch(`/api/GetComments/${id}/?page=${page_comments}`).then(response => response.json())
   if (Comment) {
-    const commentList = document.querySelector("main > ul")
+    const commentList = document.querySelector(".comment-container")
     await Comment.forEach((comment) => {
-      commentList.innerHTML += `<li class="comment-item" data-comment-id="${comment.id}">
+      commentList.innerHTML += `<li class="comment-item">
                 <div class="username">${comment.author}</div>
                 <p class="content-preview">${comment.content}</p>
                 <div class="post-date">${comment.date}</div>
-                <div class="interaction-section">
-                    <button class="like-comment-btn ${comment.isliked ? "like-reacted" : ""}" name="like_post"  value="${comment.id}" id="likes">
-                        <i class="fas fa-thumbs-up"></i>
-                        ${comment.likes}
-                    </button>
-                    <button class="dislike-comment-btn ${comment.isdisliked ? "dislike-reacted" : ""}" name="deslike_post" value="${comment.id}" id="likes">
-                        <i class="fas fa-thumbs-down"></i>
-                        ${comment.dislikes}
-                    </button>
             </li>`})
-    Likes_Comments()
   }
   InsertComment()
   Likes_Posts()
@@ -535,70 +534,6 @@ async function GetAllComment(id, page_comments = 1) {
 
 
 
-async function Likes_Comments() {
-  document.querySelectorAll('.like-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
-    let currentTarget = e.currentTarget
-    const id = await e.target.closest('.comment-item').getAttribute('data-comment-id');
-
-    const data = { thread_type: 'comment', thread_id: parseInt(id), react: 1 }
-    let response = await fetch('/api/reaction', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    response = await response.json()
-    const dislikeButton = await e.target.closest('.comment-item').querySelector('button.dislike-comment-btn')
-    if (response.isliked) {
-      currentTarget.classList.add("like-reacted")
-      currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
-    } else {
-      currentTarget.classList.remove("like-reacted")
-      currentTarget.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
-    }
-    if (response.isdisliked) {
-      dislikeButton.classList.add("dislike-reacted")
-      dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
-    } else {
-      dislikeButton.classList.remove("dislike-reacted")
-      dislikeButton.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
-    }
-
-
-  }))
-  document.querySelectorAll('.dislike-comment-btn').forEach(e => e.addEventListener('click', async (e) => {
-    let currentTarget = e.currentTarget
-    const id = await e.target.closest('.comment-item').getAttribute('data-comment-id');
-
-    const data = { thread_type: 'comment', thread_id: parseInt(id), react: 2 }
-    let response = await fetch('/api/reaction', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    response = await response.json()
-
-    const likeButton = await e.target.closest('.comment-item').querySelector('button.like-comment-btn')
-    if (response.isliked) {
-      likeButton.classList.add("like-reacted")
-      likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
-    } else {
-      likeButton.classList.remove("like-reacted")
-      likeButton.innerHTML = `<i class="fas fa-thumbs-up"></i> ${response.Like}`
-    }
-    if (response.isdisliked) {
-      currentTarget.classList.add("dislike-reacted")
-      currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
-    } else {
-      currentTarget.classList.remove("dislike-reacted")
-      currentTarget.innerHTML = `<i class="fas fa-thumbs-down"></i> ${response.Dislike}`
-    }
-
-  }))
-}
 
 
 function ChatBox(ws) {

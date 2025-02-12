@@ -22,7 +22,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusBadRequest, "Bad request")
 		return
 	}
-	err := H.Service.LoginUser(&user)
+	username, err := H.Service.LoginUser(&user)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
 			utils.WriteJson(w, http.StatusLocked, "Database Is Busy!")
@@ -59,7 +59,7 @@ func (H *Handler) Signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SetSessionCookie(w, user.Uuid)
-	utils.WriteJson(w, http.StatusOK, "You Logged In Successfuly!")
+	utils.WriteJson(w, http.StatusOK, username)
 }
 
 func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
@@ -86,11 +86,11 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
-		// gender 
-        if err.Error() == models.Errors.InvalidCredentials {
-            utils.WriteJson(w, http.StatusBadRequest, "bad request gender!")
-            return
-        }
+		// gender
+		if err.Error() == models.Errors.InvalidCredentials {
+			utils.WriteJson(w, http.StatusBadRequest, "bad request gender!")
+			return
+		}
 
 		// Age
 		if err.Error() == models.UserErrors.InvalideAge {
@@ -121,7 +121,6 @@ func (H *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	
 		utils.WriteJson(w, http.StatusInternalServerError, "Error While Registering The User.")
 		return
 	}
