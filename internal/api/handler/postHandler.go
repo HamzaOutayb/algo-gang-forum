@@ -70,7 +70,7 @@ func (H *Handler) GetPostByIdHandler(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
 	cookie, err := r.Cookie("session_token")
 	userid := 0
-	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
+	if err != http.ErrNoCookie || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		userid, err = H.Service.Database.GetUser(cookie.Value)
 		if err != nil {
 			utils.WriteJson(w, http.StatusBadRequest, "bad request")
@@ -106,7 +106,7 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("session_token")
 	id := 0
-	if err != http.ErrNoCookie && H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
+	if err != http.ErrNoCookie || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		id, _ = H.Service.Database.GetUser(cookie.Value)
 	}
 
@@ -132,7 +132,7 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (H *Handler) GetContactHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
-	if err != nil {
+	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()){
 		utils.WriteJson(w, http.StatusNonAuthoritativeInfo, err)
 		return
 	}

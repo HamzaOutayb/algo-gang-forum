@@ -12,6 +12,8 @@ var NofetchComment = false
 let idtime
 let inchat = false
 
+window.history.pushState({}, '', "/");
+
 fetch('/api/checkuser').then(response => response.json()).then(data => {
   console.log(data)
   if (!data) {
@@ -21,6 +23,18 @@ fetch('/api/checkuser').then(response => response.json()).then(data => {
     GoToHomePage()
   }
 })
+
+
+function checkuser() {
+  fetch('/api/checkuser').then(response => response.json()).then(data => {
+    console.log(data)
+    if (!data) {
+      ws.close()
+      GoToLoginPage()
+    }
+  })
+}
+
 
 let is_resize = false;
 let done_resize = false;
@@ -123,13 +137,6 @@ function Listeners() {
   GetSinglePost()
   InsertComment()
 }
-
-
-
-
-
-
-
 
 function GoToLoginPage() {
   if (document.querySelector("link[rel='stylesheet'][href='/Assets/post.css']")) {
@@ -731,12 +738,10 @@ async function startchat(ws) {
   })
 
   ws.onmessage = (message) => {
+    checkuser()
     const parsedMessage = JSON.parse(message.data);
 
-    console.log('parsedMessage', parsedMessage);
-
     if (parsedMessage.Status === null) {
-      console.log(parsedMessage);
       if ((parsedMessage.to == to || parsedMessage.sender == TO_id ) && parsedMessage.message) {
         const chatBox = document.getElementById('chatBox');
         if (chatBox) {
@@ -747,7 +752,6 @@ async function startchat(ws) {
           </div></br>`;
         }
       } else if (parsedMessage.istyping == true) {
-        console.log("gh")
         if (TO_id == parsedMessage.sender) {
 
           typing = document.querySelector(".typing-indicator")
@@ -758,7 +762,7 @@ async function startchat(ws) {
             typing.innerHTML = `${parsedMessage.sender}  is typing<img src="Assets/JVX7.gif" alt="loding"> `
             idtime = setTimeout(() => {
               typing.innerHTML = ``
-            }, 3000)
+            }, 1500)
           }
 
         }
@@ -778,7 +782,7 @@ async function StartWs() {
 
   ws.onmessage = (message) => {
 
-
+    checkuser()
     try {
       const parsedData = JSON.parse(message.data);
       if (parsedData.Status) {
@@ -814,7 +818,6 @@ async function StartWs() {
 
 
 function Status(data) {
-  console.log("status");
   document.querySelectorAll('.users').forEach(e => {
 
     for (let key in data) {

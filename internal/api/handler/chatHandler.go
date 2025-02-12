@@ -32,7 +32,7 @@ type Message struct {
 type Data_send struct {
 	Sender   string `json:"sender"`
 	Message  string `json:"message"`
-	Date    time.Time
+	Date     time.Time
 	To       int `json:"to"`
 	Status   map[int]bool
 	IsTyping bool `json:"istyping"`
@@ -46,50 +46,46 @@ var (
 
 func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	user, err := r.Cookie("session_token")
-	if err != nil {
-
-		utils.WriteJson(w, 500, "no cookies")
-		return
-	}
-
-	if user.Value == "" {
-
-		http.Error(w, "User not specified", http.StatusBadRequest)
-		return
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-
-		log.Println(err)
+	if err != nil || !H.Service.Database.CheckExpiredCookie(user.Value, time.Now()) {
+		utils.WriteJson(w, http.StatusUnauthorized, "no cookies")
 		return
 	}
 
 	user_name, user_id, err := H.Service.Database.GetId(user.Value)
 	if err != nil {
 		if err == sqlite3.ErrLocked {
-			http.Error(w, "data base locked", http.StatusLocked)
+			utils.WriteJson(w, http.StatusLocked, "data base locked")
+			return
 		}
-		// err bad request theres no sender or no receiver
-		// err db is locked
+		utils.WriteJson(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
 	}
 
 	defer func() {
 		mu.Lock()
 
-		statusmap[user_id] = false
-		logout := Data_send{
-			Status: statusmap,
-		}
+		logout := Data_send{Status: statusmap}
 		Indexconss := H.Service.LookingForIndexconns(conns[user_id], conn)
-		conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
-		broadcast(conns, logout)
+		if Indexconss >= 0 && Indexconss < len(conns[user_id]) {
+			conns[user_id] = append(conns[user_id][:Indexconss], conns[user_id][Indexconss+1:]...)
+		}
+
+		if len(conns[user_id]) == 0 {
+			statusmap[user_id] = false
+			broadcast(conns, logout)	
+		}
 		conn.Close()
 		mu.Unlock()
 		fmt.Println(user_name + " disconnected")
 	}()
 
-		mu.Lock()
+	mu.Lock()
 	conns[user_id] = append(conns[user_id], conn)
 	statusmap[user_id] = true
 	login := Data_send{
@@ -97,7 +93,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 	}
 	broadcast(conns, login)
 
-		mu.Unlock()
+	mu.Unlock()
 
 	for {
 		var UnmarshalData Data_send
@@ -174,7 +170,7 @@ func (H *Handler) GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	
+
 	utils.WriteJson(w, http.StatusOK, HistoryMessages)
 }
 

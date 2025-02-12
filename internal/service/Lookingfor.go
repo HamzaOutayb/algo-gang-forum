@@ -8,5 +8,5 @@ func (S *Service) LookingForIndexconns(slice []*websocket.Conn, conn *websocket.
 			return i
 		}
 	}
-	return 0
+	return -1
 }
