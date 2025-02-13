@@ -18,7 +18,7 @@ window.history.pushState({}, '', "/");
 fetch('/api/checkuser').then(response => response.json()).then(data => {
   console.log(data)
   if (!data) {
-    ws.close()
+    ws?.close()
     GoToLoginPage()
   } else {
     GoToHomePage()
@@ -30,7 +30,7 @@ function checkuser() {
   fetch('/api/checkuser').then(response => response.json()).then(data => {
     console.log(data)
     if (!data) {
-      ws.close()
+      ws?.close()
       GoToLoginPage()
     }
   })
@@ -80,24 +80,41 @@ async function deleteCookie() {
 }
 
 async function Login(Login_re, key_re) {
-  let email = document.querySelector('input#email')
-  let password = document.querySelector('input#password')
-  const errorMessage = document.getElementById('errorMessage')
-  let data = { email: Login_re?.value || email.value, password: key_re?.value || password.value }
+  console.log("test");
 
-  let response = await fetch('/Signin', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-  if (!response.ok) {
-    const errorData = await response.json()
+  let checkuser = await fetch('/api/checkuser')
+  checkuser = await checkuser.json()
 
+  console.log("fg", checkuser)
+  if (checkuser) {
+    const errorMessage = document.getElementById('errorMessage')
     errorMessage.classList.add("errorMessage")
-    errorMessage.innerHTML = errorData
+    errorMessage.innerHTML = "You are already loged in"
+    const errorMessage2 = document.getElementById('errorMessage2')
+    errorMessage2.classList.add("errorMessage")
+    errorMessage2.innerHTML = "You are already loged in"
   } else {
-    user = await response.json()    
-    GoToHomePage()
+    let email = document.querySelector('input#email')
+    let password = document.querySelector('input#password')
+    const errorMessage = document.getElementById('errorMessage')
+    let data = { email: Login_re?.value || email.value, password: key_re?.value || password.value }
+
+    let response = await fetch('/Signin', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+      const errorData = await response.json()
+
+      errorMessage.classList.add("errorMessage")
+      errorMessage.innerHTML = errorData
+    } else {
+      user = await response.json()
+      GoToHomePage()
+    }
   }
+
+
 
   // errorMessage.classList.add("errorMessage")
   // errorMessage.innerHTML = 'Network error occurred!'
@@ -338,7 +355,6 @@ async function FetchConversations() {
       })
     }
   })
-  StartWs()
 }
 
 
@@ -386,6 +402,7 @@ async function GetAllPosts(page = 1) {
   document.querySelector('h3.logo').addEventListener('click', GoToHomePage)
   GetSinglePost()
   InsertComment()
+  StartWs()
 
 
   const width = window.innerWidth;
@@ -420,13 +437,13 @@ async function GetAllPosts(page = 1) {
 function InsertComment() {
   let CommentBtn = document.querySelectorAll(`button[type="submit"][name="id-post"]`)
   CommentBtn.forEach(e => e.addEventListener("click", async (e) => {
-    
+
     const id = e.target.closest('.post-item').getAttribute('data-post-id');
     const postsinput = document.querySelector(`.post-item[data-post-id="${id}"] input[name="comment"]`);
     const data = { postId: parseInt(id), content: String(postsinput.value) }
-  if (data.content === "") {
-    return;
-  }
+    if (data.content === "") {
+      return;
+    }
 
     await fetch('/comment', {
       method: 'POST',
@@ -434,10 +451,10 @@ function InsertComment() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-    }).then(response =>  {
+    }).then(response => {
       if (response.ok) {
         console.log('Comment added successfully');
-        
+
         const commentList = document.querySelector(".comment-container")
         commentList.innerHTML = `<li class="comment-item">
                 <div class="username">${user}</div>
@@ -677,7 +694,7 @@ async function startchat(ws) {
     const parsedMessage = JSON.parse(message.data);
 
     if (parsedMessage.Status === null) {
-      if ((parsedMessage.to == to || parsedMessage.sender == TO_id ) && parsedMessage.message) {
+      if ((parsedMessage.to == to || parsedMessage.sender == TO_id) && parsedMessage.message) {
         const chatBox = document.getElementById('chatBox');
         if (chatBox) {
           chatBox.innerHTML += ` <div class=${parsedMessage.to == to ? "Message_TO" : "Message_From"}>
@@ -712,12 +729,12 @@ async function StartWs() {
   ws = new WebSocket('ws://localhost:8080/chat');
 
   ws.onopen = () => {
+    FetchChatWithConversations()
+    checkuser()
     console.log('Connected');
   };
 
   ws.onmessage = (message) => {
-
-    checkuser()
     try {
       const parsedData = JSON.parse(message.data);
       if (parsedData.Status) {
