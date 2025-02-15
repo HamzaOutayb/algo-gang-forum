@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 
 	"real-time-forum/internal/models"
 )
@@ -20,12 +21,11 @@ func (Database *Database) HistoryMessages(from int, to string, pagenm int) ([]mo
 	if err != nil {
 		return []models.Conversations{}, err
 	}
-
 	start := (pagenm - 1) * messagesperpage
-
 	if start >= count || start < 0 {
 		return []models.Conversations{}, errors.New(models.CommentErrors.InvalidPage)
 	}
+	fmt.Println("start", start)
 	rows, err := Database.Db.Query(`
     SELECT u.Nickname, m.content, m.created_at 
     FROM messages m 
@@ -54,6 +54,7 @@ func (Database *Database) HistoryMessages(from int, to string, pagenm int) ([]mo
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return result, nil
 }
 

@@ -98,7 +98,6 @@ func (s *Service) GetPostbyid(idstr string, userid int) (models.Post, error) {
 }
 
 func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
-	start := ((num - 1) * models.PostsPerPage)
 	total := 0
 	err := s.Database.Tablelen("post", &total)
 	if err != nil {
@@ -107,11 +106,12 @@ func (s *Service) GetPost(num, userID int) ([]models.Post, error) {
 	if total == 0 {
 		return []models.Post{}, nil
 	}
-	if num-1 == (total/models.PostsPerPage)+(total%models.PostsPerPage) {
-		start = models.PostsPerPage % total
-	} else if num-1 > (total/models.PostsPerPage)+(total%models.PostsPerPage) {
-		return []models.Post{}, nil
+
+	start := (num - 1) * models.PostsPerPage
+	if start >= total || start < 0 {
+		return []models.Post{}, errors.New(models.CommentErrors.InvalidPage)
 	}
+
 	row, err := s.Database.ExtractPosts(start)
 	if err != nil {
 		return nil, err

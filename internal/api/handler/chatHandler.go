@@ -61,6 +61,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -78,7 +79,7 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 
 		if len(conns[user_id]) == 0 {
 			statusmap[user_id] = false
-			broadcast(conns, logout)	
+			broadcast(conns, logout)
 		}
 		conn.Close()
 		mu.Unlock()
@@ -102,23 +103,20 @@ func (H *Handler) ChatService(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
-		mu.Lock()
+		
 		if !UnmarshalData.IsTyping {
+			mu.Lock()
 			err = H.Service.Database.InsertChat(user_id, UnmarshalData.To, UnmarshalData.Message)
+			mu.Unlock()
 			if err != nil {
+				
 				log.Println(err)
 			}
+			fmt.Println(user_name + ": " + UnmarshalData.Message)
 		}
 		UnmarshalData.Sender = user_name
 		UnmarshalData.Date = time.Now()
-		mu.Unlock()
-
-		for _, value := range conns[user_id] {
-			if err := value.WriteJSON(UnmarshalData); err != nil {
-				log.Println(err)
-				return
-			}
-		}
+		
 		for _, value := range conns[UnmarshalData.To] {
 			if err := value.WriteJSON(UnmarshalData); err != nil {
 				log.Println(err)

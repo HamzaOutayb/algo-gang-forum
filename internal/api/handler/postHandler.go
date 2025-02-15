@@ -112,15 +112,19 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	Posts, err = H.Service.GetPost(num, id)
 	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
+		switch err.Error() {
+		case sql.ErrNoRows.Error():
 			utils.WriteJson(w, http.StatusOK, []models.Post{})
 			return
-		case sqlite3.ErrLocked:
+		case sqlite3.ErrLocked.Error():
 			utils.WriteJson(w, http.StatusLocked, struct {
 				Error string `json:"error"`
 			}{Error: "Database Locked"})
 			return
+		case models.CommentErrors.InvalidPage:
+			utils.WriteJson(w, http.StatusBadRequest, models.CommentErrors.InvalidPage)
+			return
+
 		}
 		utils.WriteJson(w, http.StatusInternalServerError, struct {
 			Error string `json:"error"`
@@ -132,7 +136,7 @@ func (H *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (H *Handler) GetContactHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
-	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()){
+	if err != nil || !H.Service.Database.CheckExpiredCookie(cookie.Value, time.Now()) {
 		utils.WriteJson(w, http.StatusNonAuthoritativeInfo, err)
 		return
 	}

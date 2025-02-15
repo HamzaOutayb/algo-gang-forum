@@ -359,7 +359,7 @@ button[type="submit"] {
     background-color:rgba(95, 80, 80, 0.1);
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(86, 90, 93, 0.5);
-    display: flex;
+    display: none;
     flex-direction: column;
     padding: 20px;
     z-index: 87986;

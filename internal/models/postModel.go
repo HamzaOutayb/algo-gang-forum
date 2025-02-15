@@ -46,7 +46,7 @@ type ShowComment struct {
 	IsDisliked bool   `json:"isdisliked"`
 }
 
-var PostsPerPage = 5
+var PostsPerPage = 20
 
 var PostErrors struct {
 	PostNotExist        string

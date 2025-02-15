@@ -8,6 +8,9 @@ import (
 
 func (Database *Database) InsertChat(From, To int, Message string) error {
 	var Conversations_ID int64
+	 Database.Db.Exec("PRAGMA journal_mode=WAL;")   // Enables WAL mode
+Database.Db.Exec("PRAGMA busy_timeout = 5000;") // Waits 5 seconds before failing
+
 	Database.Db.QueryRow("SELECT id FROM conversations WHERE (user_one = ? AND user_two = ?) OR (user_one = ? AND user_two = ?)", From, To, To, From).Scan(&Conversations_ID)
 	if Conversations_ID == 0 {
 		Insertchat, err := Database.Db.Exec("INSERT INTO conversations (user_one, user_two) VALUES (?, ?)", From, To)
